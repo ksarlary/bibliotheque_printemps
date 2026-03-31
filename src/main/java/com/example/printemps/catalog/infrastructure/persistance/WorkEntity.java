@@ -3,6 +3,8 @@ package com.example.printemps.catalog.infrastructure.persistance;
 import com.example.printemps.catalog.domain.WorkId;
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "work")
 @Access(AccessType.FIELD)
@@ -21,8 +23,10 @@ public class WorkEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private String authors;
+    @ElementCollection
+    @CollectionTable(name = "work_authors", joinColumns = @JoinColumn(name = "work_technical_id"))
+    @Column(name = "author")
+    private List<String> authors;
 
     @Column
     private String publisher;
@@ -39,8 +43,10 @@ public class WorkEntity {
     @Column
     private String language;
 
-    @Column
-    private String subject;
+    @ElementCollection
+    @CollectionTable(name = "work_subjects", joinColumns = @JoinColumn(name = "work_technical_id"))
+    @Column(name = "subject")
+    private List<String> subjects;
 
     @Column(length = 2000)
     private String description;
@@ -52,13 +58,13 @@ public class WorkEntity {
             WorkId id,
             String isbn,
             String title,
-            String authors,
+            List<String> authors,
             String publisher,
             Integer publicationYear,
             String category,
             String type,
             String language,
-            String subject,
+            List<String> subjects,
             String description
     ) {
         this.id = id;
@@ -70,7 +76,7 @@ public class WorkEntity {
         this.category = category;
         this.type = type;
         this.language = language;
-        this.subject = subject;
+        this.subjects = subjects;
         this.description = description;
     }
 
@@ -90,7 +96,7 @@ public class WorkEntity {
         return title;
     }
 
-    public String getAuthors() {
+    public List<String> getAuthors() {
         return authors;
     }
 
@@ -114,8 +120,8 @@ public class WorkEntity {
         return language;
     }
 
-    public String getSubject() {
-        return subject;
+    public List<String> getSubjects() {
+        return subjects;
     }
 
     public String getDescription() {

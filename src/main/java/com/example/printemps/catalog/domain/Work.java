@@ -3,6 +3,8 @@ package com.example.printemps.catalog.domain;
 import com.example.printemps.catalog.application.models.CreateWorkRequest;
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "work")
 @Access(AccessType.FIELD)
@@ -21,8 +23,10 @@ public class Work {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private String authors;
+    @ElementCollection
+    @CollectionTable(name = "work_authors", joinColumns = @JoinColumn(name = "work_technical_id"))
+    @Column(name = "author")
+    private List<String> authors;
 
     @Column(nullable = false)
     private String publisher;
@@ -39,8 +43,10 @@ public class Work {
     @Column(nullable = false)
     private String language;
 
-    @Column(nullable = false)
-    private String subject;
+    @ElementCollection
+    @CollectionTable(name = "work_subjects", joinColumns = @JoinColumn(name = "work_technical_id"))
+    @Column(name = "subject")
+    private List<String> subjects;
 
     @Column(length = 2000)
     private String description;
@@ -52,13 +58,13 @@ public class Work {
             WorkId id,
             String isbn,
             String title,
-            String authors,
+            List<String> authors,
             String publisher,
             Integer publicationYear,
             String category,
             String type,
             String language,
-            String subject,
+            List<String> subjects,
             String description
     ) {
         this.id = id;
@@ -70,7 +76,7 @@ public class Work {
         this.category = category;
         this.type = type;
         this.language = language;
-        this.subject = subject;
+        this.subjects = subjects;
         this.description = description;
     }
 
@@ -85,20 +91,20 @@ public class Work {
                 request.category(),
                 request.type(),
                 request.language(),
-                request.subject(),
+                request.subjects(),
                 request.description()
         );
     }
 
     public void update(
             String title,
-            String authors,
+            List<String> authors,
             String publisher,
             Integer publicationYear,
             String category,
             String type,
             String language,
-            String subject,
+            List<String> subjects,
             String description
     ) {
         this.title = title;
@@ -108,7 +114,7 @@ public class Work {
         this.category = category;
         this.type = type;
         this.language = language;
-        this.subject = subject;
+        this.subjects = subjects;
         this.description = description;
     }
 
@@ -128,7 +134,7 @@ public class Work {
         return title;
     }
 
-    public String getAuthors() {
+    public List<String> getAuthors() {
         return authors;
     }
 
@@ -152,8 +158,8 @@ public class Work {
         return language;
     }
 
-    public String getSubject() {
-        return subject;
+    public List<String> getSubjects() {
+        return subjects;
     }
 
     public String getDescription() {

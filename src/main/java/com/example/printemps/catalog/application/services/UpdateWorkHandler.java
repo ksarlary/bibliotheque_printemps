@@ -29,7 +29,7 @@ public class UpdateWorkHandler implements UpdateWork {
                 request.category(),
                 request.type(),
                 request.language(),
-                request.subject(),
+                request.subjects(),
                 request.description()
         );
 

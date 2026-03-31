@@ -25,9 +25,7 @@ public class CreateWorkHandler implements CreateWork {
     @Override
     public Work execute(CreateWorkRequest request) {
 
-        WorkId workId = new WorkId(idGenerator.generate());
-
-        Work work = Work.create(workId, request);
+        Work work = Work.create(new WorkId(idGenerator.generate()), request);
 
         return workRepository.save(work);
     }

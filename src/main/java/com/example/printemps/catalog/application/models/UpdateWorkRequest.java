@@ -1,14 +1,16 @@
 package com.example.printemps.catalog.application.models;
 
+import java.util.List;
+
 public record UpdateWorkRequest(
         String title,
-        String authors,
+        List<String> authors,
         String publisher,
         Integer publicationYear,
         String category,
         String type,
         String language,
-        String subject,
+        List<String> subjects,
         String description
 ) {
 }

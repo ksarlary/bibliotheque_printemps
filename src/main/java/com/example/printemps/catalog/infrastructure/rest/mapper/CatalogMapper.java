@@ -18,7 +18,9 @@ public class CatalogMapper {
                 work.getPublisher(),
                 work.getPublicationYear(),
                 work.getCategory(),
+                work.getType(),
                 work.getLanguage(),
+                work.getSubjects(),
                 work.getDescription()
         );
     }

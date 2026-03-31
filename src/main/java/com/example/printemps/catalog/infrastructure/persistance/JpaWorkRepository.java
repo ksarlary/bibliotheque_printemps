@@ -29,7 +29,7 @@ public class JpaWorkRepository implements WorkRepository {
                 work.getCategory(),
                 work.getType(),
                 work.getLanguage(),
-                work.getSubject(),
+                work.getSubjects(),
                 work.getDescription()
         );
 
@@ -72,7 +72,7 @@ public class JpaWorkRepository implements WorkRepository {
                 entity.getCategory(),
                 entity.getType(),
                 entity.getLanguage(),
-                entity.getSubject(),
+                entity.getSubjects(),
                 entity.getDescription()
         );
     }

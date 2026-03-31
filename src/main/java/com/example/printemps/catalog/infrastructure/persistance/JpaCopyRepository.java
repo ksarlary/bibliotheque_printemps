@@ -31,7 +31,7 @@ public class JpaCopyRepository implements CopyRepository {
                 copy.getWork().getCategory(),
                 copy.getWork().getType(),
                 copy.getWork().getLanguage(),
-                copy.getWork().getSubject(),
+                copy.getWork().getSubjects(),
                 copy.getWork().getDescription()
         );
 
@@ -69,7 +69,7 @@ public class JpaCopyRepository implements CopyRepository {
                                 entity.getWork().getCategory(),
                                 entity.getWork().getType(),
                                 entity.getWork().getLanguage(),
-                                entity.getWork().getSubject(),
+                                entity.getWork().getSubjects(),
                                 entity.getWork().getDescription()
                         ),
                         entity.getBarcode(),
@@ -93,7 +93,7 @@ public class JpaCopyRepository implements CopyRepository {
                                 entity.getWork().getCategory(),
                                 entity.getWork().getType(),
                                 entity.getWork().getLanguage(),
-                                entity.getWork().getSubject(),
+                                entity.getWork().getSubjects(),
                                 entity.getWork().getDescription()
                         ),
                         entity.getBarcode(),
