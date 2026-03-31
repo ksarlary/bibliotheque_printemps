@@ -22,7 +22,7 @@ public class Work {
     private String title;
 
     @Column(nullable = false)
-    private String author;
+    private String authors;
 
     @Column(nullable = false)
     private String publisher;
@@ -33,29 +33,44 @@ public class Work {
     @Column(nullable = false)
     private String category;
 
+    @Column(nullable = false)
+    private String type;
+
+    @Column(nullable = false)
+    private String language;
+
+    @Column(nullable = false)
+    private String subject;
+
     @Column(length = 2000)
     private String description;
 
     protected Work() {
     }
 
-    private Work(
+    public Work(
             WorkId id,
             String isbn,
             String title,
-            String author,
+            String authors,
             String publisher,
             Integer publicationYear,
             String category,
+            String type,
+            String language,
+            String subject,
             String description
     ) {
         this.id = id;
         this.isbn = isbn;
         this.title = title;
-        this.author = author;
+        this.authors = authors;
         this.publisher = publisher;
         this.publicationYear = publicationYear;
         this.category = category;
+        this.type = type;
+        this.language = language;
+        this.subject = subject;
         this.description = description;
     }
 
@@ -64,27 +79,36 @@ public class Work {
                 id,
                 request.isbn(),
                 request.title(),
-                request.author(),
+                request.authors(),
                 request.publisher(),
                 request.publicationYear(),
                 request.category(),
+                request.type(),
+                request.language(),
+                request.subject(),
                 request.description()
         );
     }
 
     public void update(
             String title,
-            String author,
+            String authors,
             String publisher,
             Integer publicationYear,
             String category,
+            String type,
+            String language,
+            String subject,
             String description
     ) {
         this.title = title;
-        this.author = author;
+        this.authors = authors;
         this.publisher = publisher;
         this.publicationYear = publicationYear;
         this.category = category;
+        this.type = type;
+        this.language = language;
+        this.subject = subject;
         this.description = description;
     }
 
@@ -104,8 +128,8 @@ public class Work {
         return title;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getAuthors() {
+        return authors;
     }
 
     public String getPublisher() {
@@ -118,6 +142,18 @@ public class Work {
 
     public String getCategory() {
         return category;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public String getSubject() {
+        return subject;
     }
 
     public String getDescription() {

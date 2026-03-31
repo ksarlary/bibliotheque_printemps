@@ -1,14 +1,14 @@
-package com.example.printemps.catalog.application.models;
+package com.example.printemps.catalog.infrastructure.rest.dto;
 
-public record UpdateWorkRequest(
+public record WorkDTO(
+        String id,
+        String isbn,
         String title,
         String authors,
         String publisher,
         Integer publicationYear,
         String category,
-        String type,
         String language,
-        String subject,
         String description
 ) {
 }

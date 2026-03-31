@@ -56,6 +56,16 @@ public class Copy {
         );
     }
 
+    public static Copy restore(
+            CopyId id,
+            Work work,
+            String barcode,
+            CopyStatus status,
+            String location
+    ) {
+        return new Copy(id, work, barcode, status, location);
+    }
+
     public void updateStatus(CopyStatus status) {
         this.status = status;
     }

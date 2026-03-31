@@ -34,13 +34,18 @@ public class WorkEntity {
     private String category;
 
     @Column
+    private String type;
+
+    @Column
     private String language;
+
+    @Column
+    private String subject;
 
     @Column(length = 2000)
     private String description;
 
     protected WorkEntity() {
-        // JPA
     }
 
     public WorkEntity(
@@ -51,7 +56,9 @@ public class WorkEntity {
             String publisher,
             Integer publicationYear,
             String category,
+            String type,
             String language,
+            String subject,
             String description
     ) {
         this.id = id;
@@ -61,7 +68,9 @@ public class WorkEntity {
         this.publisher = publisher;
         this.publicationYear = publicationYear;
         this.category = category;
+        this.type = type;
         this.language = language;
+        this.subject = subject;
         this.description = description;
     }
 
@@ -97,8 +106,16 @@ public class WorkEntity {
         return category;
     }
 
+    public String getType() {
+        return type;
+    }
+
     public String getLanguage() {
         return language;
+    }
+
+    public String getSubject() {
+        return subject;
     }
 
     public String getDescription() {
