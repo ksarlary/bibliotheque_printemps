@@ -3,6 +3,7 @@ package com.example.printemps.loan.infrastructure.persistance;
 import com.example.printemps.loan.application.gateways.LoanRepository;
 import com.example.printemps.loan.domain.Loan;
 import com.example.printemps.loan.domain.LoanId;
+import com.example.printemps.loan.domain.LoanStatus;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -43,6 +44,14 @@ public class JpaLoanRepository implements LoanRepository {
     @Override
     public List<Loan> findByUserId(String userId) {
         return repository.findByUserId(userId)
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Loan> findActiveByUserId(String userId) {
+        return repository.findByUserIdAndStatusIn(userId, List.of(LoanStatus.ACTIVE, LoanStatus.OVERDUE))
                 .stream()
                 .map(this::toDomain)
                 .toList();

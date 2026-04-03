@@ -10,4 +10,5 @@ public interface LoanRepository {
     Loan save(Loan loan);
     Optional<Loan> findById(LoanId id);
     List<Loan> findByUserId(String userId);
+    List<Loan> findActiveByUserId(String userId);
 }
