@@ -5,6 +5,7 @@ public enum CopyStatus {
     ON_LOAN,
     RESERVED,
     IN_TRANSIT,
+    IN_PROCESSING,
     LOST,
     DAMAGED,
     WITHDRAWN

@@ -2,11 +2,13 @@ package com.example.printemps.catalog.infrastructure.rest;
 
 import com.example.printemps.catalog.application.models.AddCopyRequest;
 import com.example.printemps.catalog.application.models.CreateWorkRequest;
+import com.example.printemps.catalog.application.models.SearchWorksQuery;
 import com.example.printemps.catalog.application.models.UpdateCopyStatusRequest;
 import com.example.printemps.catalog.application.models.UpdateWorkRequest;
 import com.example.printemps.catalog.application.usecases.AddCopy;
 import com.example.printemps.catalog.application.usecases.CreateWork;
 import com.example.printemps.catalog.application.usecases.SearchCopiesByWork;
+import com.example.printemps.catalog.application.usecases.SearchSimilarWorks;
 import com.example.printemps.catalog.application.usecases.SearchWorkById;
 import com.example.printemps.catalog.application.usecases.SearchWorks;
 import com.example.printemps.catalog.application.usecases.UpdateCopyStatus;
@@ -16,6 +18,7 @@ import com.example.printemps.catalog.domain.CopyId;
 import com.example.printemps.catalog.domain.Work;
 import com.example.printemps.catalog.domain.WorkId;
 import com.example.printemps.catalog.infrastructure.rest.dto.CopyDTO;
+import com.example.printemps.catalog.infrastructure.rest.dto.WorkDetailDTO;
 import com.example.printemps.catalog.infrastructure.rest.dto.WorkDTO;
 import com.example.printemps.catalog.infrastructure.rest.mapper.CatalogMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +35,7 @@ public class CatalogController {
     private final SearchWorks searchWorks;
     private final SearchWorkById searchWorkById;
     private final SearchCopiesByWork searchCopiesByWork;
+    private final SearchSimilarWorks searchSimilarWorks;
     private final UpdateWork updateWork;
     private final UpdateCopyStatus updateCopyStatus;
     private final CatalogMapper mapper;
@@ -42,6 +46,7 @@ public class CatalogController {
             SearchWorks searchWorks,
             SearchWorkById searchWorkById,
             SearchCopiesByWork searchCopiesByWork,
+            SearchSimilarWorks searchSimilarWorks,
             UpdateWork updateWork,
             UpdateCopyStatus updateCopyStatus,
             CatalogMapper mapper
@@ -51,6 +56,7 @@ public class CatalogController {
         this.searchWorks = searchWorks;
         this.searchWorkById = searchWorkById;
         this.searchCopiesByWork = searchCopiesByWork;
+        this.searchSimilarWorks = searchSimilarWorks;
         this.updateWork = updateWork;
         this.updateCopyStatus = updateCopyStatus;
         this.mapper = mapper;
@@ -64,16 +70,27 @@ public class CatalogController {
     }
 
     @GetMapping("/works")
-    public List<WorkDTO> searchWorks(@RequestParam(required = false) String keyword) {
-        return searchWorks.execute(keyword).stream()
+    public List<WorkDTO> searchWorks(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String language,
+            @RequestParam(required = false) String subject,
+            @RequestParam(required = false) Boolean availableOnly,
+            @RequestParam(required = false) Integer year
+    ) {
+        return searchWorks.execute(new SearchWorksQuery(keyword, type, language, subject, availableOnly, year))
+                .stream()
                 .map(mapper::toDto)
                 .toList();
     }
 
     @GetMapping("/works/{workId}")
-    public WorkDTO getWorkById(@PathVariable String workId) {
-        Work work = searchWorkById.execute(new WorkId(workId));
-        return mapper.toDto(work);
+    public WorkDetailDTO getWorkById(@PathVariable String workId) {
+        WorkId id = new WorkId(workId);
+        Work work = searchWorkById.execute(id);
+        List<Copy> copies = searchCopiesByWork.execute(id);
+        List<Work> similar = searchSimilarWorks.execute(id);
+        return mapper.toDetailDto(work, copies, similar);
     }
 
     @PreAuthorize("hasRole('LIBRARIAN')")
