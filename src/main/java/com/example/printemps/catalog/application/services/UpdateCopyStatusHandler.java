@@ -7,6 +7,8 @@ import com.example.printemps.catalog.domain.Copy;
 import com.example.printemps.catalog.domain.CopyId;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class UpdateCopyStatusHandler implements UpdateCopyStatus {
 
@@ -19,7 +21,7 @@ public class UpdateCopyStatusHandler implements UpdateCopyStatus {
     @Override
     public Copy execute(CopyId copyId, UpdateCopyStatusRequest request) {
         Copy copy = copyRepository.findById(copyId)
-                .orElseThrow(() -> new RuntimeException("Copy not found"));
+                .orElseThrow(() -> new NoSuchElementException("Copy not found"));
 
         copy.updateStatus(request.status());
 

@@ -8,6 +8,8 @@ import com.example.printemps.users.domain.Policy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
+
 @Service
 class UpdatePolicyHandler implements UpdatePolicy {
 
@@ -21,7 +23,7 @@ class UpdatePolicyHandler implements UpdatePolicy {
     @Transactional
     public void handle(Category category, UpdatePolicyRequest request) {
         Policy policy = policyRepository.findById(category)
-                .orElseThrow(() -> new RuntimeException("Policy not found"));
+                .orElseThrow(() -> new NoSuchElementException("Policy not found"));
 
         policy.update(
                 request.maxLoans(),

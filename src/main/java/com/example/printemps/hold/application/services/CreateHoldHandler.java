@@ -7,6 +7,7 @@ import com.example.printemps.hold.domain.Hold;
 import com.example.printemps.hold.domain.HoldId;
 import com.example.printemps.hold.domain.HoldStatus;
 import com.example.printemps.shared.DomainIdGenerator;
+import com.example.printemps.shared.error.BusinessException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +39,7 @@ public class CreateHoldHandler implements CreateHold {
         );
 
         if (alreadyExists) {
-            throw new IllegalStateException("User already has an active hold for this work");
+            throw new BusinessException("User already has an active hold for this work");
         }
 
         int queuePosition = (int) holdRepository.countByWorkIdAndStatusIn(

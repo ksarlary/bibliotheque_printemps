@@ -11,13 +11,17 @@ import com.example.printemps.loan.application.models.CheckoutLoanRequest;
 import com.example.printemps.loan.application.usecases.CheckoutLoan;
 import com.example.printemps.loan.domain.Loan;
 import com.example.printemps.loan.domain.LoanId;
+import com.example.printemps.penalties.application.gateways.PenaltyRepository;
 import com.example.printemps.shared.DomainIdGenerator;
+import com.example.printemps.shared.error.BusinessException;
 import com.example.printemps.users.application.gateways.PolicyRepository;
 import com.example.printemps.users.application.gateways.UserRepository;
 import com.example.printemps.users.domain.Policy;
 import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
 
 import java.util.List;
 
@@ -29,6 +33,7 @@ public class CheckoutLoanHandler implements CheckoutLoan {
     private final UserRepository userRepository;
     private final PolicyRepository policyRepository;
     private final HoldRepository holdRepository;
+    private final PenaltyRepository penaltyRepository;
     private final DomainIdGenerator idGenerator;
 
     public CheckoutLoanHandler(
@@ -37,6 +42,7 @@ public class CheckoutLoanHandler implements CheckoutLoan {
             UserRepository userRepository,
             PolicyRepository policyRepository,
             HoldRepository holdRepository,
+            PenaltyRepository penaltyRepository,
             DomainIdGenerator idGenerator
     ) {
         this.loanRepository = loanRepository;
@@ -44,6 +50,7 @@ public class CheckoutLoanHandler implements CheckoutLoan {
         this.userRepository = userRepository;
         this.policyRepository = policyRepository;
         this.holdRepository = holdRepository;
+        this.penaltyRepository = penaltyRepository;
         this.idGenerator = idGenerator;
     }
 
@@ -51,16 +58,20 @@ public class CheckoutLoanHandler implements CheckoutLoan {
     @Transactional
     public Loan execute(CheckoutLoanRequest request) {
         User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new RuntimeException("User not found: " + request.userId()));
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + request.userId()));
 
         Policy policy = policyRepository.findById(user.getCategory())
-                .orElseThrow(() -> new RuntimeException("Policy not found for category: " + user.getCategory()));
+                .orElseThrow(() -> new NoSuchElementException("Policy not found for category: " + user.getCategory()));
 
         Copy copy = copyRepository.findById(new CopyId(request.copyId()))
-                .orElseThrow(() -> new RuntimeException("Copy not found: " + request.copyId()));
+                .orElseThrow(() -> new NoSuchElementException("Copy not found: " + request.copyId()));
+
+        if (!penaltyRepository.findActiveByUserId(request.userId()).isEmpty()) {
+            throw new BusinessException("New loan not allowed: user has active penalties");
+        }
 
         if (copy.getStatus() != CopyStatus.AVAILABLE) {
-            throw new IllegalStateException("Copy is not available: " + request.copyId());
+            throw new BusinessException("Copy is not available: " + request.copyId());
         }
 
         boolean hasReadyHold = holdRepository.existsByWorkIdAndStatusIn(
@@ -69,12 +80,12 @@ public class CheckoutLoanHandler implements CheckoutLoan {
         );
 
         if (hasReadyHold) {
-            throw new IllegalStateException("This work is reserved and ready for pickup");
+            throw new BusinessException("This work is reserved and ready for pickup");
         }
 
         long activeLoans = loanRepository.findActiveByUserId(request.userId()).size();
         if (activeLoans >= policy.getMaxLoans()) {
-            throw new IllegalStateException("User has reached their loan quota of " + policy.getMaxLoans());
+            throw new BusinessException("User has reached their loan quota of " + policy.getMaxLoans());
         }
 
         Loan loan = Loan.create(
