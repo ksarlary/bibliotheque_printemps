@@ -16,7 +16,7 @@ public class Copy {
     private CopyId id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "work", nullable = false)
+    @JoinColumn(name = "work_id", nullable = false)
     private Work work;
 
     @Column(nullable = false, unique = true)
