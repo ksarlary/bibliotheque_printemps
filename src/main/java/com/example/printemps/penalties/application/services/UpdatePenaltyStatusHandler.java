@@ -8,6 +8,8 @@ import com.example.printemps.penalties.domain.PenaltyId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
+
 @Service
 class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
 
@@ -21,7 +23,7 @@ class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
     @Transactional
     public void handle(PenaltyId id, UpdatePenaltyStatusRequest request) {
         Penalty penalty = penaltyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Penalty not found"));
+                .orElseThrow(() -> new NoSuchElementException("Penalty not found"));
         penalty.updateStatus(request.status());
 
     }

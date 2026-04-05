@@ -7,6 +7,8 @@ import com.example.printemps.hold.domain.HoldId;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class CancelHoldHandler implements CancelHold {
 
@@ -20,7 +22,7 @@ public class CancelHoldHandler implements CancelHold {
     @Transactional
     public void handle(String holdId) {
         Hold hold = holdRepository.findById(new HoldId(holdId))
-                .orElseThrow(() -> new IllegalArgumentException("Hold not found: " + holdId));
+                .orElseThrow(() -> new NoSuchElementException("Hold not found: " + holdId));
 
         hold.cancel();
         holdRepository.save(hold);
