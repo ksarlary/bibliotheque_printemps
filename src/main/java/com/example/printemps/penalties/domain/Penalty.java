@@ -28,7 +28,7 @@ public class Penalty {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column
+    @Column(nullable = false)
     private String reason;
 
     @Enumerated(EnumType.STRING)
