@@ -7,6 +7,8 @@ import com.example.printemps.catalog.domain.Work;
 import com.example.printemps.catalog.domain.WorkId;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class UpdateWorkHandler implements UpdateWork {
 
@@ -19,7 +21,7 @@ public class UpdateWorkHandler implements UpdateWork {
     @Override
     public Work execute(WorkId workId, UpdateWorkRequest request) {
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found"));
+                .orElseThrow(() -> new NoSuchElementException("Work not found"));
 
         work.update(
                 request.title(),

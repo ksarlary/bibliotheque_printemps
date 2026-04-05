@@ -7,6 +7,8 @@ import com.example.printemps.users.domain.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
+
 @Service
 class UpdateUserStatusHandler implements UpdateUserStatus {
 
@@ -20,7 +22,7 @@ class UpdateUserStatusHandler implements UpdateUserStatus {
     @Transactional
     public void handle(String ssoId, UpdateUserStatusRequest request) {
         User user = userRepository.findById(ssoId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
 
         user.updateStatus(request.status());
     }

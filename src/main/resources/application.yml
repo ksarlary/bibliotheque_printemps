@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: printemps
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  # Configuration des messages de validation et d'internationalisation
+  messages:
+    basename: ValidationMessages
+    encoding: UTF-8
+    cache-duration: 3600
+    fallback-to-system-locale: false
+
+logging:
+  level:
+    org.hibernate.orm.connections.pooling: WARN
+    org.hibernate.engine.jdbc.connections: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  file:
+    name: /tmp/printemps.log
+
+# Configuration SpringDoc OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs                    # Endpoint JSON de la spécification OpenAPI
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html             # URL de l'interface Swagger UI
+    enabled: true
+    operations-sorter: method          # Trier par méthode HTTP (GET, POST, etc.)
+    tags-sorter: alpha                 # Trier les tags alphabétiquement
+    display-request-duration: true     # Afficher la durée des requêtes
+    try-it-out-enabled: true           # Activer le bouton "Try it out"
+  show-actuator: false                 # Masquer les endpoints Actuator
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+# Configuration Spring Boot Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,loggers
+  endpoint:
+    health:
+      show-details: when-authorized
+    loggers:
+      enabled: true

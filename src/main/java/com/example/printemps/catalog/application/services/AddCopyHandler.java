@@ -11,6 +11,8 @@ import com.example.printemps.catalog.domain.WorkId;
 import com.example.printemps.shared.DomainIdGenerator;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class AddCopyHandler implements AddCopy {
 
@@ -32,7 +34,7 @@ public class AddCopyHandler implements AddCopy {
     public Copy execute(WorkId workId, AddCopyRequest request) {
 
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found"));
+                .orElseThrow(() -> new NoSuchElementException("Work not found"));
 
         CopyId copyId = new CopyId(idGenerator.generate());
 

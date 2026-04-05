@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class ReturnLoanHandler implements ReturnLoan {
 
@@ -36,10 +38,10 @@ public class ReturnLoanHandler implements ReturnLoan {
     @Transactional
     public Loan execute(ReturnLoanRequest request) {
         Loan loan = loanRepository.findById(new LoanId(request.loanId()))
-                .orElseThrow(() -> new RuntimeException("Loan not found"));
+                .orElseThrow(() -> new NoSuchElementException("Loan not found"));
 
         Copy copy = copyRepository.findById(new CopyId(loan.getCopyId()))
-                .orElseThrow(() -> new RuntimeException("Copy not found: " + loan.getCopyId()));
+                .orElseThrow(() -> new NoSuchElementException("Copy not found: " + loan.getCopyId()));
 
         loan.markAsReturned();
         Loan saved = loanRepository.save(loan);
@@ -59,6 +61,7 @@ public class ReturnLoanHandler implements ReturnLoan {
             copy.updateStatus(CopyStatus.AVAILABLE);
         }
 
+        copy.updateStatus(CopyStatus.AVAILABLE);
         copyRepository.save(copy);
 
         return saved;

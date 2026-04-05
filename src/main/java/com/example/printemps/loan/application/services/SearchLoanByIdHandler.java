@@ -6,6 +6,8 @@ import com.example.printemps.loan.domain.Loan;
 import com.example.printemps.loan.domain.LoanId;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class SearchLoanByIdHandler implements SearchLoanById {
 
@@ -18,6 +20,6 @@ public class SearchLoanByIdHandler implements SearchLoanById {
     @Override
     public Loan execute(LoanId loanId) {
         return loanRepository.findById(loanId)
-                .orElseThrow(() -> new RuntimeException("Loan not found"));
+                .orElseThrow(() -> new NoSuchElementException("Loan not found"));
     }
 }
