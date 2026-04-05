@@ -28,7 +28,6 @@ public class CreateHoldHandler implements CreateHold {
     public HoldId handle(CreateHoldRequest request) {
         List<HoldStatus> activeStatuses = List.of(
                 HoldStatus.REQUESTED,
-                HoldStatus.QUEUED,
                 HoldStatus.READY_FOR_PICKUP
         );
 
@@ -42,7 +41,10 @@ public class CreateHoldHandler implements CreateHold {
             throw new IllegalStateException("User already has an active hold for this work");
         }
 
-        int queuePosition = (int) holdRepository.countByWorkIdAndStatusIn(request.workId(), activeStatuses) + 1;
+        int queuePosition = (int) holdRepository.countByWorkIdAndStatusIn(
+                request.workId(),
+                List.of(HoldStatus.REQUESTED)
+        ) + 1;
 
         HoldId holdId = new HoldId(idGenerator.generate());
         Hold hold = Hold.create(holdId, request.workId(), request.userId(), queuePosition);

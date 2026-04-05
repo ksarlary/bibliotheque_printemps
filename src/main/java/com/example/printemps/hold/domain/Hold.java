@@ -23,7 +23,7 @@ public class Hold {
     private String userId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private HoldStatus status;
 
     @Column(name = "queue_position", nullable = false)
@@ -39,9 +39,8 @@ public class Hold {
         this.id = id;
         this.workId = workId;
         this.userId = userId;
-        this.status = HoldStatus.REQUESTED;
         this.queuePosition = queuePosition;
-        this.pickupUntil = null;
+        this.status = HoldStatus.REQUESTED;
     }
 
     public static Hold create(HoldId id, String workId, String userId, int queuePosition) {
@@ -79,16 +78,15 @@ public class Hold {
         this.status = HoldStatus.CANCELLED;
     }
 
-    public void readyForPickup(LocalDateTime pickupUntil) {
+    public void markReadyForPickup(LocalDateTime pickupUntil) {
+        if (status != HoldStatus.REQUESTED) {
+            throw new IllegalStateException("Only a requested hold can become READY_FOR_PICKUP");
+        }
         this.status = HoldStatus.READY_FOR_PICKUP;
         this.pickupUntil = pickupUntil;
     }
 
-    public void markPickedUp() {
-        this.status = HoldStatus.PICKED_UP;
-    }
-
-    public void expire() {
-        this.status = HoldStatus.EXPIRED;
+    public boolean isWaiting() {
+        return status == HoldStatus.REQUESTED;
     }
 }

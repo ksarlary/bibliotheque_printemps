@@ -11,13 +11,15 @@ import java.util.Optional;
 @Repository
 public interface SpringJpaHoldRepository extends JpaRepository<Hold, Long> {
 
-    List<Hold> findByUserId(String userId);
-
     Optional<Hold> findById_Value(String value);
 
-    List<Hold> findByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
+    List<Hold> findByUserId(String userId);
+
+    long countByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses);
 
     boolean existsByWorkIdAndUserIdAndStatusIn(String workId, String userId, List<HoldStatus> statuses);
 
-    long countByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses);
+    boolean existsByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses);
+
+    Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
 }

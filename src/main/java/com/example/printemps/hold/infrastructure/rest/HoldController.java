@@ -8,7 +8,6 @@ import com.example.printemps.hold.infrastructure.rest.dto.HoldDTO;
 import com.example.printemps.hold.infrastructure.rest.mapper.HoldMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.jspecify.annotations.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -36,7 +35,7 @@ public class HoldController {
     }
 
     @PostMapping
-    ResponseEntity<@NonNull Void> createHold(@Valid @RequestBody final CreateHoldRequest request) {
+    ResponseEntity<Void> createHold(@Valid @RequestBody final CreateHoldRequest request) {
         final var holdId = createHold.handle(request);
         return ResponseEntity.created(URI.create("/api/holds/" + holdId.value())).build();
     }
@@ -47,7 +46,7 @@ public class HoldController {
     }
 
     @PatchMapping("/{holdId}/cancel")
-    ResponseEntity<@NonNull Void> cancelHold(@PathVariable String holdId) {
+    ResponseEntity<Void> cancelHold(@PathVariable String holdId) {
         cancelHold.handle(holdId);
         return ResponseEntity.ok().build();
     }

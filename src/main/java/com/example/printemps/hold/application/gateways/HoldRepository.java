@@ -11,7 +11,12 @@ public interface HoldRepository {
     Hold save(Hold hold);
     Optional<Hold> findById(HoldId id);
     List<Hold> findByUserId(String userId);
-    List<Hold> findByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
-    boolean existsByWorkIdAndUserIdAndStatusIn(String workId, String userId, List<HoldStatus> statuses);
+
     long countByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses);
+
+    boolean existsByWorkIdAndUserIdAndStatusIn(String workId, String userId, List<HoldStatus> statuses);
+
+    boolean existsByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses);
+
+    Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
 }

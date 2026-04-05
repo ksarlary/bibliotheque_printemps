@@ -34,8 +34,8 @@ public class JpaHoldRepository implements HoldRepository {
     }
 
     @Override
-    public List<Hold> findByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses) {
-        return jpaRepository.findByWorkIdAndStatusInOrderByQueuePositionAsc(workId, statuses);
+    public long countByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses) {
+        return jpaRepository.countByWorkIdAndStatusIn(workId, statuses);
     }
 
     @Override
@@ -44,7 +44,12 @@ public class JpaHoldRepository implements HoldRepository {
     }
 
     @Override
-    public long countByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses) {
-        return jpaRepository.countByWorkIdAndStatusIn(workId, statuses);
+    public boolean existsByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses) {
+        return jpaRepository.existsByWorkIdAndStatusIn(workId, statuses);
+    }
+
+    @Override
+    public Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses) {
+        return jpaRepository.findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(workId, statuses);
     }
 }
