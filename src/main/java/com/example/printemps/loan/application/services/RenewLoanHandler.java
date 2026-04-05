@@ -1,5 +1,10 @@
 package com.example.printemps.loan.application.services;
 
+import com.example.printemps.catalog.application.gateways.CopyRepository;
+import com.example.printemps.catalog.domain.Copy;
+import com.example.printemps.catalog.domain.CopyId;
+import com.example.printemps.hold.application.gateways.HoldRepository;
+import com.example.printemps.hold.domain.HoldStatus;
 import com.example.printemps.loan.application.gateways.LoanRepository;
 import com.example.printemps.loan.application.models.RenewLoanRequest;
 import com.example.printemps.loan.application.usecases.RenewLoan;
@@ -13,6 +18,9 @@ import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+
 @Service
 public class RenewLoanHandler implements RenewLoan {
 
@@ -20,16 +28,23 @@ public class RenewLoanHandler implements RenewLoan {
     private final UserRepository userRepository;
     private final PolicyRepository policyRepository;
     private final PenaltyRepository penaltyRepository;
+    private final HoldRepository holdRepository;
+    private final CopyRepository copyRepository;
 
     public RenewLoanHandler(
             LoanRepository loanRepository,
             UserRepository userRepository,
-            PolicyRepository policyRepository, PenaltyRepository penaltyRepository
+            PolicyRepository policyRepository,
+            PenaltyRepository penaltyRepository,
+            HoldRepository holdRepository,
+            CopyRepository copyRepository
     ) {
         this.loanRepository = loanRepository;
         this.userRepository = userRepository;
         this.policyRepository = policyRepository;
         this.penaltyRepository = penaltyRepository;
+        this.holdRepository = holdRepository;
+        this.copyRepository = copyRepository;
     }
 
     @Override
@@ -44,11 +59,23 @@ public class RenewLoanHandler implements RenewLoan {
         Policy policy = policyRepository.findById(user.getCategory())
                 .orElseThrow(() -> new RuntimeException("Policy not found for category: " + user.getCategory()));
 
+        Copy copy = copyRepository.findById(new CopyId(loan.getCopyId()))
+                .orElseThrow(() -> new IllegalArgumentException("Copy not found: " + loan.getCopyId()));
+
         if (loan.getRenewCount() >= policy.getMaxRenewals()) {
             throw new IllegalStateException("Renewal limit of " + policy.getMaxRenewals() + " reached");
         }
 
         // TODO: vérifier qu'il n'existe pas de réservation en attente (à implémenter avec le module Hold)
+        boolean hasWaitingHold = holdRepository.existsByWorkIdAndStatusIn(
+                copy.getWork().getId().value(),
+                List.of(HoldStatus.REQUESTED, HoldStatus.READY_FOR_PICKUP)
+        );
+
+        if (hasWaitingHold) {
+            throw new IllegalStateException("Loan cannot be renewed because a hold is waiting for this work");
+        }
+
         // TODO: vérifier qu'il n'y a pas de pénalité bloquante (à implémenter avec le module Penalty)
         if (!penaltyRepository.findActiveByUserId(loan.getUserId()).isEmpty()) {
             throw new IllegalStateException("Renewal not allowed: user has active penalties");

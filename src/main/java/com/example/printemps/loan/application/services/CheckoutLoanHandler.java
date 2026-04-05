@@ -4,6 +4,8 @@ import com.example.printemps.catalog.application.gateways.CopyRepository;
 import com.example.printemps.catalog.domain.CopyId;
 import com.example.printemps.catalog.domain.CopyStatus;
 import com.example.printemps.catalog.domain.Copy;
+import com.example.printemps.hold.application.gateways.HoldRepository;
+import com.example.printemps.hold.domain.HoldStatus;
 import com.example.printemps.loan.application.gateways.LoanRepository;
 import com.example.printemps.loan.application.models.CheckoutLoanRequest;
 import com.example.printemps.loan.application.usecases.CheckoutLoan;
@@ -17,6 +19,8 @@ import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CheckoutLoanHandler implements CheckoutLoan {
 
@@ -24,6 +28,7 @@ public class CheckoutLoanHandler implements CheckoutLoan {
     private final CopyRepository copyRepository;
     private final UserRepository userRepository;
     private final PolicyRepository policyRepository;
+    private final HoldRepository holdRepository;
     private final DomainIdGenerator idGenerator;
 
     public CheckoutLoanHandler(
@@ -31,12 +36,14 @@ public class CheckoutLoanHandler implements CheckoutLoan {
             CopyRepository copyRepository,
             UserRepository userRepository,
             PolicyRepository policyRepository,
+            HoldRepository holdRepository,
             DomainIdGenerator idGenerator
     ) {
         this.loanRepository = loanRepository;
         this.copyRepository = copyRepository;
         this.userRepository = userRepository;
         this.policyRepository = policyRepository;
+        this.holdRepository = holdRepository;
         this.idGenerator = idGenerator;
     }
 
@@ -54,6 +61,15 @@ public class CheckoutLoanHandler implements CheckoutLoan {
 
         if (copy.getStatus() != CopyStatus.AVAILABLE) {
             throw new IllegalStateException("Copy is not available: " + request.copyId());
+        }
+
+        boolean hasReadyHold = holdRepository.existsByWorkIdAndStatusIn(
+                copy.getWork().getId().value(),
+                List.of(HoldStatus.READY_FOR_PICKUP)
+        );
+
+        if (hasReadyHold) {
+            throw new IllegalStateException("This work is reserved and ready for pickup");
         }
 
         long activeLoans = loanRepository.findActiveByUserId(request.userId()).size();
