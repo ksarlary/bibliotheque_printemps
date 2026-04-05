@@ -1,0 +1,17 @@
+package com.example.printemps.hold.application.gateways;
+
+import com.example.printemps.hold.domain.Hold;
+import com.example.printemps.hold.domain.HoldId;
+import com.example.printemps.hold.domain.HoldStatus;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface HoldRepository {
+    Hold save(Hold hold);
+    Optional<Hold> findById(HoldId id);
+    List<Hold> findByUserId(String userId);
+    List<Hold> findByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
+    boolean existsByWorkIdAndUserIdAndStatusIn(String workId, String userId, List<HoldStatus> statuses);
+    long countByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses);
+}
