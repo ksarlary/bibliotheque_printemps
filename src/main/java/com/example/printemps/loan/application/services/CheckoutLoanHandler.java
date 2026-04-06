@@ -17,6 +17,7 @@ import com.example.printemps.shared.error.BusinessException;
 import com.example.printemps.users.application.gateways.PolicyRepository;
 import com.example.printemps.users.application.gateways.UserRepository;
 import com.example.printemps.users.domain.Policy;
+import com.example.printemps.users.domain.Status;
 import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,10 @@ public class CheckoutLoanHandler implements CheckoutLoan {
 
         Copy copy = copyRepository.findById(new CopyId(request.copyId()))
                 .orElseThrow(() -> new NoSuchElementException("Copy not found: " + request.copyId()));
+
+        if (user.getStatus() == Status.BLOCKED || user.getStatus() == Status.SUSPENDED) {
+            throw new BusinessException("New loan not allowed: user account is " + user.getStatus());
+        }
 
         if (!penaltyRepository.findActiveByUserId(request.userId()).isEmpty()) {
             throw new BusinessException("New loan not allowed: user has active penalties");

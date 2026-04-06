@@ -5,6 +5,10 @@ import com.example.printemps.penalties.application.models.UpdatePenaltyStatusReq
 import com.example.printemps.penalties.application.usecases.UpdatePenaltyStatus;
 import com.example.printemps.penalties.domain.Penalty;
 import com.example.printemps.penalties.domain.PenaltyId;
+import com.example.printemps.penalties.domain.PenaltyStatus;
+import com.example.printemps.users.application.gateways.UserRepository;
+import com.example.printemps.users.domain.Status;
+import com.example.printemps.users.domain.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +18,11 @@ import java.util.NoSuchElementException;
 class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
 
     private final PenaltyRepository penaltyRepository;
+    private final UserRepository userRepository;
 
-    UpdatePenaltyStatusHandler(PenaltyRepository penaltyRepository) {
+    UpdatePenaltyStatusHandler(PenaltyRepository penaltyRepository, UserRepository userRepository) {
         this.penaltyRepository = penaltyRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -24,7 +30,26 @@ class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
     public void handle(PenaltyId id, UpdatePenaltyStatusRequest request) {
         Penalty penalty = penaltyRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Penalty not found"));
+
+        User user = userRepository.findById(penalty.getUserId())
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + penalty.getUserId()));
+
         penalty.updateStatus(request.status());
 
+        if (request.status() == PenaltyStatus.ACTIVE) {
+            user.updateStatus(Status.BLOCKED);
+        }
+        else if (request.status() == PenaltyStatus.PAID
+                || request.status() == PenaltyStatus.CANCELLED) {
+            boolean hasStillActivePenalties =
+                    !penaltyRepository.findActiveByUserId(user.getSsoId()).isEmpty();
+
+            if (!hasStillActivePenalties && user.getStatus() == Status.BLOCKED) {
+                user.updateStatus(Status.ACTIVE);
+            }
+        }
+
+
+        userRepository.save(user);
     }
 }
