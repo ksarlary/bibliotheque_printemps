@@ -28,7 +28,10 @@ class UpdatePolicyHandler implements UpdatePolicy {
         policy.update(
                 request.maxLoans(),
                 request.loanDurationDays(),
-                request.maxRenewals()
+                request.maxRenewals(),
+                request.blockAfterDaysLate(),
+                request.lateFeeMode(),
+                request.lateFeeAmount()
         );
     }
 }

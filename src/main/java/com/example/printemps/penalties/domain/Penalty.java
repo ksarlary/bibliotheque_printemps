@@ -60,16 +60,34 @@ public class Penalty {
     }
 
     public static Penalty create(PenaltyId id, CreatePenaltyRequest request) {
-        return new Penalty(
+        return create(
                 id,
                 request.userId(),
                 request.type(),
                 request.amount(),
-                request.reason(),
+                request.reason()
+        );
+    }
+
+
+    public static Penalty create(
+            PenaltyId id,
+            String userId,
+            PenaltyType type,
+            BigDecimal amount,
+            String reason
+    ) {
+        return new Penalty(
+                id,
+                userId,
+                type,
+                amount,
+                reason,
                 PenaltyStatus.ACTIVE,
                 LocalDateTime.now()
         );
     }
+
 
     public void updateStatus(PenaltyStatus status) { this.status = status; }
 

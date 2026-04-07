@@ -24,7 +24,10 @@ public class UserMapper {
                 policy.getCategory().name(),
                 policy.getMaxLoans(),
                 policy.getLoanDurationDays(),
-                policy.getMaxRenewals()
+                policy.getMaxRenewals(),
+                policy.getBlockAfterDaysLate(),
+                policy.getLateFeeMode().name(),
+                policy.getLateFeeAmount()
         );
     }
 
