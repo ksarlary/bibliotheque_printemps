@@ -3,6 +3,7 @@ package com.example.printemps.loan.domain;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "loan")
@@ -89,12 +90,12 @@ public class Loan {
         return new Loan(id, copyId, userId, startAt, dueAt, returnedAt, renewCount, status);
     }
 
-    public void markAsReturned() {
+    public void markAsReturned(LocalDateTime returnedAt) {
         if (this.status == LoanStatus.RETURNED) {
             throw new IllegalStateException("Loan already returned");
         }
 
-        this.returnedAt = LocalDateTime.now();
+        this.returnedAt = returnedAt;
         this.status = LoanStatus.RETURNED;
     }
 
@@ -107,10 +108,27 @@ public class Loan {
         this.renewCount++;
     }
 
-    public void markAsOverdue() {
-        if (this.status == LoanStatus.ACTIVE && LocalDateTime.now().isAfter(this.dueAt)) {
+    public void markAsOverdue(LocalDateTime referenceDate) {
+        if (this.status == LoanStatus.ACTIVE && isOverdue(referenceDate)) {
             this.status = LoanStatus.OVERDUE;
         }
+    }
+
+    public boolean isOverdue(LocalDateTime referenceDate) {
+        return this.returnedAt == null && referenceDate.isAfter(this.dueAt);
+    }
+
+    public long lateDays(LocalDateTime referenceDate) {
+        if (!referenceDate.isAfter(this.dueAt)) {
+            return 0;
+        }
+
+        long days = ChronoUnit.DAYS.between(
+                this.dueAt.toLocalDate(),
+                referenceDate.toLocalDate()
+        );
+
+        return Math.max(days, 0);
     }
 
     public void markAsLost() {

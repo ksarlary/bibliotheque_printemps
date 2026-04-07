@@ -10,6 +10,7 @@ import com.example.printemps.loan.application.models.RenewLoanRequest;
 import com.example.printemps.loan.application.usecases.RenewLoan;
 import com.example.printemps.loan.domain.Loan;
 import com.example.printemps.loan.domain.LoanId;
+import com.example.printemps.loan.domain.LoanStatus;
 import com.example.printemps.penalties.application.gateways.PenaltyRepository;
 import com.example.printemps.shared.error.BusinessException;
 import com.example.printemps.users.application.gateways.PolicyRepository;
@@ -20,6 +21,7 @@ import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -67,6 +69,14 @@ public class RenewLoanHandler implements RenewLoan {
 
         Copy copy = copyRepository.findById(new CopyId(loan.getCopyId()))
                 .orElseThrow(() -> new NoSuchElementException("Copy not found: " + loan.getCopyId()));
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (loan.getStatus() == LoanStatus.OVERDUE || loan.isOverdue(now)) {
+            loan.markAsOverdue(now);
+            loanRepository.save(loan);
+            throw new BusinessException("Renewal not allowed: loan is overdue");
+        }
 
         if (loan.getRenewCount() >= policy.getMaxRenewals()) {
             throw new BusinessException("Renewal limit of " + policy.getMaxRenewals() + " reached");

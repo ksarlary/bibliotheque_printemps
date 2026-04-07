@@ -12,9 +12,20 @@ import com.example.printemps.loan.application.models.ReturnLoanRequest;
 import com.example.printemps.loan.application.usecases.ReturnLoan;
 import com.example.printemps.loan.domain.Loan;
 import com.example.printemps.loan.domain.LoanId;
+import com.example.printemps.penalties.application.gateways.PenaltyRepository;
+import com.example.printemps.penalties.domain.Penalty;
+import com.example.printemps.penalties.domain.PenaltyId;
+import com.example.printemps.penalties.domain.PenaltyType;
+import com.example.printemps.shared.DomainIdGenerator;
+import com.example.printemps.users.application.gateways.PolicyRepository;
+import com.example.printemps.users.application.gateways.UserRepository;
+import com.example.printemps.users.domain.Policy;
+import com.example.printemps.users.domain.Status;
+import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +38,19 @@ public class ReturnLoanHandler implements ReturnLoan {
     private final LoanRepository loanRepository;
     private final CopyRepository copyRepository;
     private final HoldRepository holdRepository;
+    private final PenaltyRepository penaltyRepository;
+    private final UserRepository userRepository;
+    private final PolicyRepository policyRepository;
+    private final DomainIdGenerator idGenerator;
 
-    public ReturnLoanHandler(LoanRepository loanRepository, CopyRepository copyRepository, HoldRepository holdRepository) {
+    public ReturnLoanHandler(LoanRepository loanRepository, CopyRepository copyRepository, HoldRepository holdRepository, PenaltyRepository penaltyRepository, UserRepository userRepository, PolicyRepository policyRepository, DomainIdGenerator idGenerator) {
         this.loanRepository = loanRepository;
         this.copyRepository = copyRepository;
         this.holdRepository = holdRepository;
+        this.penaltyRepository = penaltyRepository;
+        this.userRepository = userRepository;
+        this.policyRepository = policyRepository;
+        this.idGenerator = idGenerator;
     }
 
     @Override
@@ -43,8 +62,39 @@ public class ReturnLoanHandler implements ReturnLoan {
         Copy copy = copyRepository.findById(new CopyId(loan.getCopyId()))
                 .orElseThrow(() -> new NoSuchElementException("Copy not found: " + loan.getCopyId()));
 
-        loan.markAsReturned();
+        User user = userRepository.findById(loan.getUserId())
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + loan.getUserId()));
+
+        Policy policy = policyRepository.findById(user.getCategory())
+                .orElseThrow(() -> new NoSuchElementException("Policy not found for category: " + user.getCategory()));
+
+        LocalDateTime returnedAt = LocalDateTime.now();
+        long lateDays = loan.lateDays(returnedAt);
+
+        loan.markAsReturned(returnedAt);
         Loan saved = loanRepository.save(loan);
+
+        if (lateDays > 0) {
+            BigDecimal amount = switch (policy.getLateFeeMode()) {
+                case FLAT -> policy.getLateFeeAmount();
+                case PER_DAY -> policy.getLateFeeAmount().multiply(BigDecimal.valueOf(lateDays));
+            };
+
+            Penalty penalty = Penalty.create(
+                    new PenaltyId(idGenerator.generate()),
+                    user.getSsoId(),
+                    PenaltyType.LATE_RETURN,
+                    amount,
+                    "Late return for loan " + loan.getId().value() + " (" + lateDays + " days late)"
+            );
+
+            penaltyRepository.save(penalty);
+
+            if (lateDays > policy.getBlockAfterDaysLate()) {
+                user.updateStatus(Status.BLOCKED);
+                userRepository.save(user);
+            }
+        }
 
         Optional<Hold> nextHold = holdRepository.findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(
                 copy.getWork().getId().value(),
@@ -61,7 +111,6 @@ public class ReturnLoanHandler implements ReturnLoan {
             copy.updateStatus(CopyStatus.AVAILABLE);
         }
 
-        copy.updateStatus(CopyStatus.AVAILABLE);
         copyRepository.save(copy);
 
         return saved;

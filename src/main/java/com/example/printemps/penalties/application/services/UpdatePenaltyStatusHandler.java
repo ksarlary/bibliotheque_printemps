@@ -36,10 +36,8 @@ class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
 
         penalty.updateStatus(request.status());
 
-        if (request.status() == PenaltyStatus.ACTIVE) {
-            user.updateStatus(Status.BLOCKED);
-        }
-        else if (request.status() == PenaltyStatus.PAID
+
+        if (request.status() == PenaltyStatus.PAID
                 || request.status() == PenaltyStatus.CANCELLED) {
             boolean hasStillActivePenalties =
                     !penaltyRepository.findActiveByUserId(user.getSsoId()).isEmpty();
