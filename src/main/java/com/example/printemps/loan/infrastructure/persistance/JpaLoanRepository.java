@@ -20,53 +20,24 @@ public class JpaLoanRepository implements LoanRepository {
 
     @Override
     public Loan save(Loan loan) {
-        LoanEntity entity = new LoanEntity(
-                loan.getId(),
-                loan.getCopyId(),
-                loan.getUserId(),
-                loan.getStartAt(),
-                loan.getDueAt(),
-                loan.getReturnedAt(),
-                loan.getRenewCount(),
-                loan.getStatus()
-        );
-
-        LoanEntity saved = repository.save(entity);
-
-        return toDomain(saved);
+        return repository.save(loan);
     }
 
     @Override
     public Optional<Loan> findById(LoanId id) {
-        return repository.findById(id).map(this::toDomain);
+        return repository.findById(id);
     }
 
     @Override
     public List<Loan> findByUserId(String userId) {
-        return repository.findByUserId(userId)
-                .stream()
-                .map(this::toDomain)
-                .toList();
+        return repository.findByUserId(userId);
+
     }
 
     @Override
     public List<Loan> findActiveByUserId(String userId) {
-        return repository.findByUserIdAndStatusIn(userId, List.of(LoanStatus.ACTIVE, LoanStatus.OVERDUE))
-                .stream()
-                .map(this::toDomain)
-                .toList();
+        return repository.findByUserIdAndStatusIn(userId, List.of(LoanStatus.ACTIVE, LoanStatus.OVERDUE));
+
     }
 
-    private Loan toDomain(LoanEntity entity) {
-        return Loan.restore(
-                entity.getId(),
-                entity.getCopyId(),
-                entity.getUserId(),
-                entity.getStartAt(),
-                entity.getDueAt(),
-                entity.getReturnedAt(),
-                entity.getRenewCount(),
-                entity.getStatus()
-        );
-    }
 }
