@@ -49,6 +49,11 @@ public class JpaHoldRepository implements HoldRepository {
     }
 
     @Override
+    public Optional<Hold> findByWorkIdAndUserIdAndStatus(String workId, String userId, HoldStatus status) {
+        return jpaRepository.findByWorkIdAndUserIdAndStatus(workId, userId, status);
+    }
+
+    @Override
     public Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses) {
         return jpaRepository.findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(workId, statuses);
     }
