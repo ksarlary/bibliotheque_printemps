@@ -5,6 +5,7 @@ import com.example.printemps.catalog.domain.CopyId;
 import com.example.printemps.catalog.domain.CopyStatus;
 import com.example.printemps.catalog.domain.Copy;
 import com.example.printemps.hold.application.gateways.HoldRepository;
+import com.example.printemps.hold.domain.Hold;
 import com.example.printemps.hold.domain.HoldStatus;
 import com.example.printemps.loan.application.gateways.LoanRepository;
 import com.example.printemps.loan.application.models.CheckoutLoanRequest;
@@ -23,8 +24,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
-import java.util.List;
 
 @Service
 public class CheckoutLoanHandler implements CheckoutLoan {
@@ -67,26 +68,16 @@ public class CheckoutLoanHandler implements CheckoutLoan {
         Copy copy = copyRepository.findById(new CopyId(request.copyId()))
                 .orElseThrow(() -> new NoSuchElementException("Copy not found: " + request.copyId()));
 
-        if (user.getStatus() == Status.BLOCKED || user.getStatus() == Status.SUSPENDED) {
-            throw new BusinessException("New loan not allowed: user account is " + user.getStatus());
-        }
+        validateUserCanCheckout(user, request.userId());
 
-        if (!penaltyRepository.findActiveByUserId(request.userId()).isEmpty()) {
-            throw new BusinessException("New loan not allowed: user has active penalties");
-        }
-
-        if (copy.getStatus() != CopyStatus.AVAILABLE) {
-            throw new BusinessException("Copy is not available: " + request.copyId());
-        }
-
-        boolean hasReadyHold = holdRepository.existsByWorkIdAndStatusIn(
+        Optional<Hold> readyHoldForUser = holdRepository.findByWorkIdAndUserIdAndStatus(
                 copy.getWork().getId().value(),
-                List.of(HoldStatus.READY_FOR_PICKUP)
+                request.userId(),
+                HoldStatus.READY_FOR_PICKUP
         );
 
-        if (hasReadyHold) {
-            throw new BusinessException("This work is reserved and ready for pickup");
-        }
+        boolean isReservationPickup = isReservationPickup(copy, readyHoldForUser);
+        validateCopyCanBeCheckedOut(copy, request.copyId(), isReservationPickup);
 
         long activeLoans = loanRepository.findActiveByUserId(request.userId()).size();
         if (activeLoans >= policy.getMaxLoans()) {
@@ -101,9 +92,43 @@ public class CheckoutLoanHandler implements CheckoutLoan {
         );
         Loan saved = loanRepository.save(loan);
 
+        if (isReservationPickup) {
+            Hold hold = readyHoldForUser.orElseThrow(
+                    () -> new IllegalStateException("Expected a READY_FOR_PICKUP hold for this user")
+            );
+            hold.markPickedUp();
+            holdRepository.save(hold);
+        }
+
         copy.updateStatus(CopyStatus.ON_LOAN);
         copyRepository.save(copy);
 
         return saved;
     }
+
+    private void validateUserCanCheckout(User user, String userId) {
+        if (user.getStatus() == Status.BLOCKED || user.getStatus() == Status.SUSPENDED) {
+            throw new BusinessException("New loan not allowed: user account is " + user.getStatus());
+        }
+
+        if (!penaltyRepository.findActiveByUserId(userId).isEmpty()) {
+            throw new BusinessException("New loan not allowed: user has active penalties");
+        }
+    }
+
+    private boolean isReservationPickup(Copy copy, Optional<Hold> readyHoldForUser) {
+        return copy.getStatus() == CopyStatus.RESERVED && readyHoldForUser.isPresent();
+    }
+
+    private void validateCopyCanBeCheckedOut(Copy copy, String copyId, boolean isReservationPickup) {
+        boolean isNormalCheckout = copy.getStatus() == CopyStatus.AVAILABLE;
+
+        if (!isNormalCheckout && !isReservationPickup) {
+            if (copy.getStatus() == CopyStatus.RESERVED) {
+                throw new BusinessException("Copy is reserved for another user or not ready for pickup");
+            }
+            throw new BusinessException("Copy is not available for checkout: " + copyId);
+        }
+    }
+
 }

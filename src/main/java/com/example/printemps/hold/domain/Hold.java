@@ -86,6 +86,14 @@ public class Hold {
         this.pickupUntil = pickupUntil;
     }
 
+    public void markPickedUp() {
+        if (status != HoldStatus.READY_FOR_PICKUP) {
+            throw new IllegalStateException("Only a READY_FOR_PICKUP hold can become PICKED_UP");
+        }
+        this.status = HoldStatus.PICKED_UP;
+        this.pickupUntil = null;
+    }
+
     public boolean isWaiting() {
         return status == HoldStatus.REQUESTED;
     }

@@ -21,5 +21,7 @@ public interface SpringJpaHoldRepository extends JpaRepository<Hold, Long> {
 
     boolean existsByWorkIdAndStatusIn(String workId, List<HoldStatus> statuses);
 
+    Optional<Hold> findByWorkIdAndUserIdAndStatus(String workId, String userId, HoldStatus status);
+
     Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
 }
