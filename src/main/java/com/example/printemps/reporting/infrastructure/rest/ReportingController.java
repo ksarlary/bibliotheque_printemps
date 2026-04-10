@@ -1,5 +1,6 @@
 package com.example.printemps.reporting.infrastructure.rest;
 
+import com.example.printemps.reporting.application.models.TopBorrowedWorkReport;
 import com.example.printemps.reporting.application.usecases.SearchTopBorrowedWorks;
 import com.example.printemps.reporting.infrastructure.rest.dto.TopBorrowedWorkDTO;
 import com.example.printemps.reporting.infrastructure.rest.mapper.ReportingMapper;
@@ -30,10 +31,8 @@ class ReportingController {
     ResponseEntity<List<TopBorrowedWorkDTO>> getTopBorrowedWorks(
             @RequestParam(defaultValue = "10") int limit
     ) {
-        return ResponseEntity.ok(
-                reportingMapper.toTopBorrowedWorkDTOList(
-                        searchTopBorrowedWorks.handle(limit)
-                )
-        );
+        List<TopBorrowedWorkReport> reports = searchTopBorrowedWorks.handle(limit);
+        List<TopBorrowedWorkDTO> dtos = reportingMapper.toTopBorrowedWorkDTOList(reports);
+        return ResponseEntity.ok(dtos);
     }
 }
