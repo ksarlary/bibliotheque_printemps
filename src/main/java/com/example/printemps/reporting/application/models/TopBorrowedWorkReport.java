@@ -1,4 +1,4 @@
-package com.example.printemps.reporting.domain;
+package com.example.printemps.reporting.application.models;
 
 public record TopBorrowedWorkReport(
         String workId,

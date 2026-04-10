@@ -2,7 +2,7 @@ package com.example.printemps.reporting.application.services;
 
 import com.example.printemps.reporting.application.gateways.ReportingRepository;
 import com.example.printemps.reporting.application.usecases.SearchTopBorrowedWorks;
-import com.example.printemps.reporting.domain.TopBorrowedWorkReport;
+import com.example.printemps.reporting.application.models.TopBorrowedWorkReport;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,10 +19,6 @@ class SearchTopBorrowedWorksHandler implements SearchTopBorrowedWorks {
     @Override
     public List<TopBorrowedWorkReport> handle(int limit) {
         int safeLimit = Math.max(limit, 1);
-
-        return reportingRepository.findTopBorrowedWorks()
-                .stream()
-                .limit(safeLimit)
-                .toList();
+        return reportingRepository.findTopBorrowedWorks(safeLimit);
     }
 }

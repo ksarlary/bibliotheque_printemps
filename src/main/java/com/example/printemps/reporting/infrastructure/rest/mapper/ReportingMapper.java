@@ -1,6 +1,6 @@
 package com.example.printemps.reporting.infrastructure.rest.mapper;
 
-import com.example.printemps.reporting.domain.TopBorrowedWorkReport;
+import com.example.printemps.reporting.application.models.TopBorrowedWorkReport;
 import com.example.printemps.reporting.infrastructure.rest.dto.TopBorrowedWorkDTO;
 import org.springframework.stereotype.Component;
 
