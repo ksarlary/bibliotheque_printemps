@@ -6,6 +6,7 @@ import com.example.printemps.loan.domain.LoanId;
 import com.example.printemps.loan.domain.LoanStatus;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,5 +40,11 @@ public class JpaLoanRepository implements LoanRepository {
         return repository.findByUserIdAndStatusIn(userId, List.of(LoanStatus.ACTIVE, LoanStatus.OVERDUE));
 
     }
+
+    @Override
+    public List<Loan> findByDueAtBetweenOrderByDueAtAsc(LocalDateTime from, LocalDateTime to) {
+        return repository.findByDueAtBetweenOrderByDueAtAsc(from, to);
+    }
+
 
 }
