@@ -118,6 +118,13 @@ public class Loan {
         return this.returnedAt == null && referenceDate.isAfter(this.dueAt);
     }
 
+    public boolean isLateAt(LocalDateTime referenceDate) {
+        if (this.returnedAt != null) {
+            return this.returnedAt.isAfter(this.dueAt);
+        }
+        return referenceDate.isAfter(this.dueAt);
+    }
+
     public long lateDays(LocalDateTime referenceDate) {
         if (!referenceDate.isAfter(this.dueAt)) {
             return 0;

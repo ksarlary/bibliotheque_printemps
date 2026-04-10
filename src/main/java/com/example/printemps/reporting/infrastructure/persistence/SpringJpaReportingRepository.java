@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -24,4 +25,6 @@ public interface SpringJpaReportingRepository extends JpaRepository<Loan, Long> 
             ORDER BY COUNT(l.technical_id) DESC, w.title ASC
             """, nativeQuery = true)
     List<TopBorrowedWorkProjection> findTopBorrowedWorks(Pageable pageable);
+
+    List<Loan> findByDueAtBetweenOrderByDueAtAsc(LocalDateTime from, LocalDateTime to);
 }
