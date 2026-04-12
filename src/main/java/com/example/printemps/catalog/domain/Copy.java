@@ -3,6 +3,8 @@ package com.example.printemps.catalog.domain;
 import com.example.printemps.catalog.application.models.AddCopyRequest;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "copy")
 @Access(AccessType.FIELD)
@@ -29,6 +31,10 @@ public class Copy {
     @Column(nullable = false)
     private String location;
 
+
+    @Column(nullable = false)
+    private LocalDateTime acquiredAt;
+
     protected Copy() {
     }
 
@@ -37,13 +43,15 @@ public class Copy {
             Work work,
             String barcode,
             CopyStatus status,
-            String location
+            String location,
+            LocalDateTime acquiredAt
     ) {
         this.id = id;
         this.work = work;
         this.barcode = barcode;
         this.status = status;
         this.location = location;
+        this.acquiredAt = acquiredAt;
     }
 
     public static Copy create(CopyId id, Work work, AddCopyRequest request) {
@@ -52,7 +60,8 @@ public class Copy {
                 work,
                 request.barcode(),
                 CopyStatus.AVAILABLE,
-                request.location()
+                request.location(),
+                LocalDateTime.now()
         );
     }
 
@@ -61,9 +70,10 @@ public class Copy {
             Work work,
             String barcode,
             CopyStatus status,
-            String location
+            String location,
+            LocalDateTime acquiredAt
     ) {
-        return new Copy(id, work, barcode, status, location);
+        return new Copy(id, work, barcode, status, location, acquiredAt );
     }
 
     public void updateStatus(CopyStatus status) {
@@ -92,5 +102,9 @@ public class Copy {
 
     public String getLocation() {
         return location;
+    }
+
+    public LocalDateTime getAcquiredAt() {
+        return acquiredAt;
     }
 }
