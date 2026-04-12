@@ -6,6 +6,7 @@ import com.example.printemps.hold.domain.HoldId;
 import com.example.printemps.hold.domain.HoldStatus;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,5 +57,10 @@ public class JpaHoldRepository implements HoldRepository {
     @Override
     public Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses) {
         return jpaRepository.findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(workId, statuses);
+    }
+
+    @Override
+    public List<Hold> findByStatusAndPickupUntilBefore(HoldStatus status, LocalDateTime dateTime) {
+        return jpaRepository.findByStatusAndPickupUntilBefore(status, dateTime);
     }
 }

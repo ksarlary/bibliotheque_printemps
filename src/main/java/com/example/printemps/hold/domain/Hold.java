@@ -94,6 +94,13 @@ public class Hold {
         this.pickupUntil = null;
     }
 
+    public void expire() {
+        if (status != HoldStatus.READY_FOR_PICKUP) {
+            throw new IllegalStateException("Only a READY_FOR_PICKUP hold can expire");
+        }
+        this.status = HoldStatus.EXPIRED;
+    }
+
     public boolean isWaiting() {
         return status == HoldStatus.REQUESTED;
     }
