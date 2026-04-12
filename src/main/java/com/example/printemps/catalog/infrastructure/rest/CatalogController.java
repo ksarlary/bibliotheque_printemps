@@ -72,13 +72,15 @@ public class CatalogController {
     @GetMapping("/works")
     public List<WorkDTO> searchWorks(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String isbn,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String language,
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) Boolean availableOnly,
-            @RequestParam(required = false) Integer year
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) String location
     ) {
-        return searchWorks.execute(new SearchWorksQuery(keyword, type, language, subject, availableOnly, year))
+        return searchWorks.execute(new SearchWorksQuery(keyword, isbn, type, language, subject, availableOnly, year, location))
                 .stream()
                 .map(mapper::toDto)
                 .toList();

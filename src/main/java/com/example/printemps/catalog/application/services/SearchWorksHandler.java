@@ -23,8 +23,9 @@ public class SearchWorksHandler implements SearchWorks {
 
     @Override
     public List<Work> execute(SearchWorksQuery query) {
-        boolean hasFilters = query.keyword() != null || query.type() != null
-                || query.language() != null || query.year() != null || query.subject() != null;
+        boolean hasFilters = query.keyword() != null || query.isbn() != null || query.type() != null
+                || query.language() != null || query.year() != null || query.subject() != null
+                || query.location() != null;
 
         List<Work> works = hasFilters
                 ? workRepository.search(query)

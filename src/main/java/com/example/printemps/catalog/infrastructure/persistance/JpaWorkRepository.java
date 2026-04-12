@@ -38,10 +38,12 @@ public class JpaWorkRepository implements WorkRepository {
     public List<Work> search(SearchWorksQuery query) {
         return repository.searchWithFilters(
                 query.keyword(),
+                query.isbn(),
                 query.type(),
                 query.language(),
                 query.year(),
-                query.subject()
+                query.subject(),
+                query.location()
         );
     }
 
