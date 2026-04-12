@@ -4,6 +4,8 @@ import com.example.printemps.loan.domain.Loan;
 import com.example.printemps.loan.infrastructure.rest.dto.LoanDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class LoanMapper {
 
@@ -18,5 +20,11 @@ public class LoanMapper {
                 loan.getRenewCount(),
                 loan.getStatus().name()
         );
+    }
+
+    public List<LoanDTO> toDTOList(List<Loan> loans) {
+        return loans.stream()
+                .map(this::toDto)
+                .toList();
     }
 }

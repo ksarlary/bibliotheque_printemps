@@ -28,7 +28,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/loans/**").hasAnyRole("READER", "LIBRARIAN", "ADMIN")
 
                         .requestMatchers("/api/users/policies/**").hasRole("ADMIN")
-                        .requestMatchers("/api/users/**").hasAnyRole("LIBRARIAN", "ADMIN")
+                        .requestMatchers("/api/users/**").hasAnyRole("READER", "LIBRARIAN", "ADMIN")
 
                         .requestMatchers("/api/penalties/**").hasAnyRole("LIBRARIAN", "ADMIN")
 

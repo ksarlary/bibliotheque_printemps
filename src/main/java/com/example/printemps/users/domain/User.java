@@ -19,6 +19,12 @@ public class User {
     @Column(nullable = false)
     private Status status;
 
+    @Column(name = "email_notifications_enabled", nullable = false)
+    private boolean emailNotificationsEnabled;
+
+    @Column(name = "reminder_notifications_enabled", nullable = false)
+    private boolean reminderNotificationsEnabled;
+
     protected User() {
     }
 
@@ -26,6 +32,8 @@ public class User {
         this.ssoId = ssoId;
         this.category = category;
         this.status = status;
+        this.emailNotificationsEnabled = true;
+        this.reminderNotificationsEnabled = true;
     }
 
     public static User create(String ssoId, Category category) {
@@ -50,5 +58,18 @@ public class User {
 
     public void updateCategory(Category category) {
         this.category = category;
+    }
+
+    public boolean isEmailNotificationsEnabled() {
+        return emailNotificationsEnabled;
+    }
+
+    public boolean isReminderNotificationsEnabled() {
+        return reminderNotificationsEnabled;
+    }
+
+    public void updateNotificationPreferences(boolean emailNotificationsEnabled, boolean reminderNotificationsEnabled) {
+        this.emailNotificationsEnabled = emailNotificationsEnabled;
+        this.reminderNotificationsEnabled = reminderNotificationsEnabled;
     }
 }
