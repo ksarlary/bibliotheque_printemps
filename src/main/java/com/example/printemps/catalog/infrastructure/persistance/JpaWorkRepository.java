@@ -1,8 +1,10 @@
 package com.example.printemps.catalog.infrastructure.persistance;
 
 import com.example.printemps.catalog.application.gateways.WorkRepository;
+import com.example.printemps.catalog.application.models.SearchWorksQuery;
 import com.example.printemps.catalog.domain.Work;
 import com.example.printemps.catalog.domain.WorkId;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -33,10 +35,21 @@ public class JpaWorkRepository implements WorkRepository {
     }
 
     @Override
-    public List<Work> search(String keyword) {
-        return repository
-                .findByTitleContainingIgnoreCaseOrAuthorsContainingIgnoreCase(keyword, keyword)
-               ;
+    public List<Work> search(SearchWorksQuery query) {
+        return repository.searchWithFilters(
+                query.keyword(),
+                query.isbn(),
+                query.type(),
+                query.language(),
+                query.year(),
+                query.subject(),
+                query.location()
+        );
+    }
+
+    @Override
+    public List<Work> findSimilarWorks(WorkId workId, List<String> subjects, List<String> authors) {
+        return repository.findSimilarTo(workId.value(), subjects, authors, PageRequest.of(0, 5));
     }
 
 }
