@@ -4,6 +4,7 @@ import com.example.printemps.hold.domain.Hold;
 import com.example.printemps.hold.domain.HoldId;
 import com.example.printemps.hold.domain.HoldStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +22,6 @@ public interface HoldRepository {
     Optional<Hold> findByWorkIdAndUserIdAndStatus(String workId, String userId, HoldStatus status);
 
     Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
+
+    List<Hold> findByStatusAndPickupUntilBefore(HoldStatus status, LocalDateTime dateTime);
 }
