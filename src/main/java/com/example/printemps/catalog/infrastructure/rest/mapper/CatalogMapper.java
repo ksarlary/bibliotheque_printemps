@@ -31,7 +31,8 @@ public class CatalogMapper {
                 copy.getWork().getId().value(),
                 copy.getBarcode(),
                 copy.getStatus().name(),
-                copy.getLocation()
+                copy.getLocation(),
+                copy.getAcquiredAt()
         );
     }
 }

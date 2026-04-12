@@ -36,4 +36,9 @@ public class JpaCopyRepository implements CopyRepository {
         return repository.findByWork_Id(workId);
 
     }
+    @Override
+    public List<Copy> findByAcquiredAtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to) {
+        return repository.findByAcquiredAtBetween(from, to);
+    }
+
 }

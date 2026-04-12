@@ -1,13 +1,21 @@
 package com.example.printemps.reporting.infrastructure.rest;
 
+import com.example.printemps.reporting.application.models.AcquisitionByPeriodReport;
 import com.example.printemps.reporting.application.models.OverdueByPeriodReport;
+import com.example.printemps.reporting.application.models.RotationRateReport;
 import com.example.printemps.reporting.application.models.TopBorrowedWorkReport;
+import com.example.printemps.reporting.application.usecases.SearchAcquisitionsByPeriod;
 import com.example.printemps.reporting.application.usecases.SearchOverduesByPeriod;
+import com.example.printemps.reporting.application.usecases.SearchRotationRates;
 import com.example.printemps.reporting.application.usecases.SearchTopBorrowedWorks;
+import com.example.printemps.reporting.infrastructure.rest.dto.AcquisitionByPeriodDTO;
 import com.example.printemps.reporting.infrastructure.rest.dto.OverdueByPeriodDTO;
+import com.example.printemps.reporting.infrastructure.rest.dto.RotationRateDTO;
 import com.example.printemps.reporting.infrastructure.rest.dto.TopBorrowedWorkDTO;
 import com.example.printemps.reporting.infrastructure.rest.mapper.ReportingMapper;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,17 +30,26 @@ import java.util.List;
 class ReportingController {
 
     private final SearchTopBorrowedWorks searchTopBorrowedWorks;
-    private final ReportingMapper reportingMapper;
     private final SearchOverduesByPeriod searchOverduesByPeriod;
-
+    private final SearchRotationRates searchRotationRates;
+    private final SearchAcquisitionsByPeriod searchAcquisitionsByPeriod;
+    private final ReportingMapper reportingMapper;
+    private final ReportingCsvExporter reportingCsvExporter;
 
     ReportingController(
             SearchTopBorrowedWorks searchTopBorrowedWorks,
-            ReportingMapper reportingMapper, SearchOverduesByPeriod searchOverduesByPeriod
+            SearchOverduesByPeriod searchOverduesByPeriod,
+            SearchRotationRates searchRotationRates,
+            SearchAcquisitionsByPeriod searchAcquisitionsByPeriod,
+            ReportingMapper reportingMapper,
+            ReportingCsvExporter reportingCsvExporter
     ) {
         this.searchTopBorrowedWorks = searchTopBorrowedWorks;
-        this.reportingMapper = reportingMapper;
         this.searchOverduesByPeriod = searchOverduesByPeriod;
+        this.searchRotationRates = searchRotationRates;
+        this.searchAcquisitionsByPeriod = searchAcquisitionsByPeriod;
+        this.reportingMapper = reportingMapper;
+        this.reportingCsvExporter = reportingCsvExporter;
     }
 
     @GetMapping("/top-borrowed-works")
@@ -42,6 +59,17 @@ class ReportingController {
         List<TopBorrowedWorkReport> reports = searchTopBorrowedWorks.handle(limit);
         List<TopBorrowedWorkDTO> dtos = reportingMapper.toTopBorrowedWorkDTOList(reports);
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping(value = "/top-borrowed-works/export", produces = "text/csv")
+    ResponseEntity<String> exportTopBorrowedWorksCsv(
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        List<TopBorrowedWorkReport> reports = searchTopBorrowedWorks.handle(limit);
+        List<TopBorrowedWorkDTO> dtos = reportingMapper.toTopBorrowedWorkDTOList(reports);
+        String csv = reportingCsvExporter.exportTopBorrowedWorks(dtos);
+
+        return buildCsvResponse("top-borrowed-works.csv", csv);
     }
 
     @GetMapping("/overdues-by-period")
@@ -54,4 +82,64 @@ class ReportingController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping(value = "/overdues-by-period/export", produces = "text/csv")
+    ResponseEntity<String> exportOverduesByPeriodCsv(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        List<OverdueByPeriodReport> reports = searchOverduesByPeriod.handle(from, to);
+        List<OverdueByPeriodDTO> dtos = reportingMapper.toOverdueByPeriodDTOList(reports);
+        String csv = reportingCsvExporter.exportOverduesByPeriod(dtos);
+
+        return buildCsvResponse("overdues-by-period-" + from + "-to-" + to + ".csv", csv);
+    }
+
+    @GetMapping("/rotation-rates")
+    ResponseEntity<List<RotationRateDTO>> getRotationRates(
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        List<RotationRateReport> reports = searchRotationRates.handle(limit);
+        List<RotationRateDTO> dtos = reportingMapper.toRotationRateDTOList(reports);
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping(value = "/rotation-rates/export", produces = "text/csv")
+    ResponseEntity<String> exportRotationRatesCsv(
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        List<RotationRateReport> reports = searchRotationRates.handle(limit);
+        List<RotationRateDTO> dtos = reportingMapper.toRotationRateDTOList(reports);
+        String csv = reportingCsvExporter.exportRotationRates(dtos);
+
+        return buildCsvResponse("rotation-rates.csv", csv);
+    }
+
+    @GetMapping("/acquisitions-by-period")
+    ResponseEntity<List<AcquisitionByPeriodDTO>> getAcquisitionsByPeriod(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        List<AcquisitionByPeriodReport> reports = searchAcquisitionsByPeriod.handle(from, to);
+        List<AcquisitionByPeriodDTO> dtos = reportingMapper.toAcquisitionByPeriodDTOList(reports);
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping(value = "/acquisitions-by-period/export", produces = "text/csv")
+    ResponseEntity<String> exportAcquisitionsByPeriodCsv(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        List<AcquisitionByPeriodReport> reports = searchAcquisitionsByPeriod.handle(from, to);
+        List<AcquisitionByPeriodDTO> dtos = reportingMapper.toAcquisitionByPeriodDTOList(reports);
+        String csv = reportingCsvExporter.exportAcquisitionsByPeriod(dtos);
+
+        return buildCsvResponse("acquisitions-by-period-" + from + "-to-" + to + ".csv", csv);
+    }
+
+    private ResponseEntity<String> buildCsvResponse(String fileName, String csvContent) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
+                .contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .body(csvContent);
+    }
 }
