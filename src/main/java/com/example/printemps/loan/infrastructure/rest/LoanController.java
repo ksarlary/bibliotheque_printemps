@@ -12,6 +12,9 @@ import com.example.printemps.loan.domain.Loan;
 import com.example.printemps.loan.domain.LoanId;
 import com.example.printemps.loan.infrastructure.rest.dto.LoanDTO;
 import com.example.printemps.loan.infrastructure.rest.mapper.LoanMapper;
+
+import com.example.printemps.shared.error.BusinessException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,7 +47,14 @@ public class LoanController {
     }
 
     @PostMapping("/checkout")
-    public LoanDTO checkout(@RequestBody CheckoutLoanRequest request) {
+    public LoanDTO checkout(@RequestBody CheckoutLoanRequest request, Authentication authentication) {
+        String currentUser = authentication.getName();
+        boolean isReader = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_READER"));
+        if (isReader && !currentUser.equals(request.userId())) {
+            throw new BusinessException("You cannot loan for another user");
+        }
         Loan loan = checkoutLoan.execute(request);
         return mapper.toDto(loan);
     }
