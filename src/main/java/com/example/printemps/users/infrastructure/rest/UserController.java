@@ -10,6 +10,7 @@ import com.example.printemps.users.infrastructure.rest.dto.UserDTO;
 import com.example.printemps.users.infrastructure.rest.mapper.UserMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -58,6 +59,7 @@ class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
     @PostMapping
     ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
         String ssoId = createUser.handle(request);
@@ -81,6 +83,7 @@ class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/policies/{category}")
     ResponseEntity<Void> updatePolicy(
             @PathVariable Category category,

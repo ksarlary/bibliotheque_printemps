@@ -6,9 +6,12 @@ import com.example.printemps.hold.application.usecases.CreateHold;
 import com.example.printemps.hold.application.usecases.SearchHoldsByUserId;
 import com.example.printemps.hold.infrastructure.rest.dto.HoldDTO;
 import com.example.printemps.hold.infrastructure.rest.mapper.HoldMapper;
+import com.example.printemps.shared.error.BusinessException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.net.URI;
 import java.util.List;
@@ -34,8 +37,17 @@ public class HoldController {
         this.holdMapper = holdMapper;
     }
 
+    @PreAuthorize("hasAnyRole('READER', 'LIBRARIAN', 'ADMIN')")
     @PostMapping
-    ResponseEntity<Void> createHold(@Valid @RequestBody final CreateHoldRequest request) {
+    ResponseEntity<Void> createHold(@Valid @RequestBody final CreateHoldRequest request, Authentication authentication) {
+        String currentUser = authentication.getName();
+        boolean isReader = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_READER"));
+
+        if (isReader && !currentUser.equals(request.userId())) {
+            throw new BusinessException("You cannot create a hold for another user");
+        }
         final var holdId = createHold.handle(request);
         return ResponseEntity.created(URI.create("/api/holds/" + holdId.value())).build();
     }

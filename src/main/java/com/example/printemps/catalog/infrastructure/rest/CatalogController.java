@@ -18,6 +18,7 @@ import com.example.printemps.catalog.domain.WorkId;
 import com.example.printemps.catalog.infrastructure.rest.dto.CopyDTO;
 import com.example.printemps.catalog.infrastructure.rest.dto.WorkDTO;
 import com.example.printemps.catalog.infrastructure.rest.mapper.CatalogMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,6 +56,7 @@ public class CatalogController {
         this.mapper = mapper;
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PostMapping("/works")
     public WorkDTO createWork(@RequestBody CreateWorkRequest request) {
         Work work = createWork.execute(request);
@@ -74,6 +76,7 @@ public class CatalogController {
         return mapper.toDto(work);
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PutMapping("/works/{workId}")
     public WorkDTO updateWork(
             @PathVariable String workId,
@@ -83,6 +86,7 @@ public class CatalogController {
         return mapper.toDto(work);
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PostMapping("/works/{workId}/copies")
     public CopyDTO addCopy(@PathVariable String workId, @RequestBody AddCopyRequest request) {
         Copy copy = addCopy.execute(new WorkId(workId), request);
@@ -96,6 +100,7 @@ public class CatalogController {
                 .toList();
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PatchMapping("/copies/{copyId}/status")
     public CopyDTO updateCopyStatus(
             @PathVariable String copyId,

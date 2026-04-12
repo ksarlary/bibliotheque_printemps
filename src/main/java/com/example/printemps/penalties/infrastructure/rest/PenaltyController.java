@@ -11,6 +11,7 @@ import com.example.printemps.penalties.infrastructure.rest.dto.PenaltyDTO;
 import com.example.printemps.penalties.infrastructure.rest.mapper.PenaltyMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -35,6 +36,7 @@ class PenaltyController {
         this.penaltyMapper = penaltyMapper;
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PostMapping
     ResponseEntity<Void> createPenalty(@Valid @RequestBody CreatePenaltyRequest request) {
         PenaltyId penaltyId = createPenalty.handle(request);
@@ -42,6 +44,7 @@ class PenaltyController {
 
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @GetMapping("/{penaltyId}")
     ResponseEntity<PenaltyDTO> getPenalty(@PathVariable String penaltyId) {
         return searchPenaltyById.handle(new PenaltyId(penaltyId))
@@ -50,6 +53,7 @@ class PenaltyController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @GetMapping("/users/{userId}")
     ResponseEntity<List<PenaltyDTO>> getPenaltiesByUser(@PathVariable String userId) {
         return ResponseEntity.ok(
@@ -57,6 +61,7 @@ class PenaltyController {
         );
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PatchMapping("/{penaltyId}/status")
     ResponseEntity<Void> updatePenaltyStatus(
             @PathVariable String penaltyId,
