@@ -1,16 +1,19 @@
 package com.example.printemps.users.infrastructure.rest;
 
 import com.example.printemps.users.application.models.CreateUserRequest;
+import com.example.printemps.users.application.models.UpdateNotificationPreferencesRequest;
 import com.example.printemps.users.application.models.UpdatePolicyRequest;
 import com.example.printemps.users.application.models.UpdateUserStatusRequest;
 import com.example.printemps.users.application.usecases.*;
 import com.example.printemps.users.domain.Category;
 import com.example.printemps.users.infrastructure.rest.dto.PolicyDTO;
 import com.example.printemps.users.infrastructure.rest.dto.UserDTO;
+import com.example.printemps.users.infrastructure.rest.dto.UserProfileDTO;
 import com.example.printemps.users.infrastructure.rest.mapper.UserMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -27,6 +30,8 @@ class UserController {
     private final SearchPolicyByCategory searchPolicyByCategory;
     private final UpdatePolicy updatePolicy;
     private final UserMapper userMapper;
+    private final SearchUserProfile searchUserProfile;
+    private final UpdateNotificationPreferences updateNotificationPreferences;
 
     UserController(
             CreateUser createUser,
@@ -35,7 +40,9 @@ class UserController {
             UpdateUserStatus updateUserStatus,
             SearchPolicyByCategory searchPolicyByCategory,
             UpdatePolicy updatePolicy,
-            UserMapper userMapper
+            UserMapper userMapper,
+            SearchUserProfile searchUserProfile,
+            UpdateNotificationPreferences updateNotificationPreferences
     ) {
         this.createUser = createUser;
         this.searchUserById = searchUserById;
@@ -44,6 +51,8 @@ class UserController {
         this.searchPolicyByCategory = searchPolicyByCategory;
         this.updatePolicy = updatePolicy;
         this.userMapper = userMapper;
+        this.searchUserProfile = searchUserProfile;
+        this.updateNotificationPreferences = updateNotificationPreferences;
     }
 
     @GetMapping
@@ -90,6 +99,36 @@ class UserController {
             @Valid @RequestBody UpdatePolicyRequest request
     ) {
         updatePolicy.handle(category, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{ssoId}/profile")
+    ResponseEntity<UserProfileDTO> getUserProfile(@PathVariable String ssoId, Authentication authentication) {
+        boolean isReader = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_READER"));
+
+        if (isReader && !authentication.getName().equals(ssoId)) {
+            throw new IllegalStateException("A reader can only access their own profile");
+        }
+        return ResponseEntity.ok(searchUserProfile.handle(ssoId));
+    }
+
+    @PatchMapping("/{ssoId}/notifications")
+    ResponseEntity<Void> updateNotificationPreferences(
+            @PathVariable String ssoId,
+            @Valid @RequestBody UpdateNotificationPreferencesRequest request,
+            Authentication authentication
+    ) {
+        boolean isReader = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_READER"));
+
+        if (isReader && !authentication.getName().equals(ssoId)) {
+            throw new IllegalStateException("A reader can only update their own notification preferences");
+        }
+
+        updateNotificationPreferences.handle(ssoId, request);
         return ResponseEntity.ok().build();
     }
 }
