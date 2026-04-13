@@ -63,4 +63,14 @@ public class JpaHoldRepository implements HoldRepository {
     public List<Hold> findByStatusAndPickupUntilBefore(HoldStatus status, LocalDateTime dateTime) {
         return jpaRepository.findByStatusAndPickupUntilBefore(status, dateTime);
     }
+
+    @Override
+    public long countByStatus(HoldStatus status) {
+        return jpaRepository.countByStatus(status);
+    }
+
+    @Override
+    public long countByStatusIn(List<HoldStatus> statuses) {
+        return jpaRepository.countByStatusIn(statuses);
+    }
 }

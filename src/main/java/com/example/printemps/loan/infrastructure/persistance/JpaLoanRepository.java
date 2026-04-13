@@ -46,5 +46,10 @@ public class JpaLoanRepository implements LoanRepository {
         return repository.findByDueAtBetweenOrderByDueAtAsc(from, to);
     }
 
+    @Override
+    public List<Loan> findByStatus(LoanStatus status) {
+        return repository.findByStatus(status);
+    }
+
 
 }

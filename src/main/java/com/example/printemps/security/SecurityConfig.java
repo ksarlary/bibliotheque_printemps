@@ -32,6 +32,8 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/penalties/**").hasAnyRole("LIBRARIAN", "ADMIN")
 
+                        .requestMatchers("/api/reporting/**").hasAnyRole("LIBRARIAN", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())

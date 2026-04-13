@@ -1,13 +1,7 @@
 package com.example.printemps.reporting.infrastructure.rest.mapper;
 
-import com.example.printemps.reporting.application.models.AcquisitionByPeriodReport;
-import com.example.printemps.reporting.application.models.OverdueByPeriodReport;
-import com.example.printemps.reporting.application.models.RotationRateReport;
-import com.example.printemps.reporting.application.models.TopBorrowedWorkReport;
-import com.example.printemps.reporting.infrastructure.rest.dto.AcquisitionByPeriodDTO;
-import com.example.printemps.reporting.infrastructure.rest.dto.OverdueByPeriodDTO;
-import com.example.printemps.reporting.infrastructure.rest.dto.RotationRateDTO;
-import com.example.printemps.reporting.infrastructure.rest.dto.TopBorrowedWorkDTO;
+import com.example.printemps.reporting.application.models.*;
+import com.example.printemps.reporting.infrastructure.rest.dto.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -72,4 +66,21 @@ public class ReportingMapper {
                 .map(this::toAcquisitionByPeriodDTO)
                 .toList();
     }
+
+    public ReservationSuccessRateDTO toReservationSuccessRateDTO(ReservationSuccessRateReport report) {
+        return new ReservationSuccessRateDTO(
+                report.successfulReservations(),
+                report.completedReservations(),
+                report.successRate()
+        );
+    }
+
+    public OverdueReturnRateDTO toOverdueReturnRateDTO(OverdueReturnRateReport report) {
+        return new OverdueReturnRateDTO(
+                report.lateReturns(),
+                report.totalReturns(),
+                report.overdueReturnRate()
+        );
+    }
+
 }
