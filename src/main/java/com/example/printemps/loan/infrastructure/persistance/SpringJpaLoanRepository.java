@@ -14,5 +14,6 @@ public interface SpringJpaLoanRepository extends JpaRepository<Loan, Long> {
     List<Loan> findByUserId(String userId);
     List<Loan> findByUserIdAndStatusIn(String userId, List<LoanStatus> statuses);
     List<Loan> findByDueAtBetweenOrderByDueAtAsc(LocalDateTime from, LocalDateTime to);
+    List<Loan> findByStatus(LoanStatus status);
 
 }

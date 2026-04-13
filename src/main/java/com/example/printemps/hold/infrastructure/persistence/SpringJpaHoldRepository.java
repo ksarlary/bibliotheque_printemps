@@ -27,4 +27,8 @@ public interface SpringJpaHoldRepository extends JpaRepository<Hold, Long> {
     Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
 
     List<Hold> findByStatusAndPickupUntilBefore(HoldStatus status, LocalDateTime dateTime);
+
+    long countByStatus(HoldStatus status);
+
+    long countByStatusIn(List<HoldStatus> statuses);
 }

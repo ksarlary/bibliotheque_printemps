@@ -24,4 +24,8 @@ public interface HoldRepository {
     Optional<Hold> findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(String workId, List<HoldStatus> statuses);
 
     List<Hold> findByStatusAndPickupUntilBefore(HoldStatus status, LocalDateTime dateTime);
+
+    long countByStatus(HoldStatus status);
+
+    long countByStatusIn(List<HoldStatus> statuses);
 }
