@@ -3,14 +3,17 @@ package com.example.printemps.catalog.infrastructure.rest;
 import com.example.printemps.catalog.application.models.AddCopyRequest;
 import com.example.printemps.catalog.application.models.CreateWorkRequest;
 import com.example.printemps.catalog.application.models.SearchWorksQuery;
+import com.example.printemps.catalog.application.models.TransferCopyRequest;
 import com.example.printemps.catalog.application.models.UpdateCopyStatusRequest;
 import com.example.printemps.catalog.application.models.UpdateWorkRequest;
 import com.example.printemps.catalog.application.usecases.AddCopy;
+import com.example.printemps.catalog.application.usecases.ArriveCopy;
 import com.example.printemps.catalog.application.usecases.CreateWork;
 import com.example.printemps.catalog.application.usecases.SearchCopiesByWork;
 import com.example.printemps.catalog.application.usecases.SearchSimilarWorks;
 import com.example.printemps.catalog.application.usecases.SearchWorkById;
 import com.example.printemps.catalog.application.usecases.SearchWorks;
+import com.example.printemps.catalog.application.usecases.TransferCopy;
 import com.example.printemps.catalog.application.usecases.UpdateCopyStatus;
 import com.example.printemps.catalog.application.usecases.UpdateWork;
 import com.example.printemps.catalog.domain.Copy;
@@ -21,6 +24,7 @@ import com.example.printemps.catalog.infrastructure.rest.dto.CopyDTO;
 import com.example.printemps.catalog.infrastructure.rest.dto.WorkDetailDTO;
 import com.example.printemps.catalog.infrastructure.rest.dto.WorkDTO;
 import com.example.printemps.catalog.infrastructure.rest.mapper.CatalogMapper;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +42,8 @@ public class CatalogController {
     private final SearchSimilarWorks searchSimilarWorks;
     private final UpdateWork updateWork;
     private final UpdateCopyStatus updateCopyStatus;
+    private final TransferCopy transferCopy;
+    private final ArriveCopy arriveCopy;
     private final CatalogMapper mapper;
 
     public CatalogController(
@@ -49,6 +55,8 @@ public class CatalogController {
             SearchSimilarWorks searchSimilarWorks,
             UpdateWork updateWork,
             UpdateCopyStatus updateCopyStatus,
+            TransferCopy transferCopy,
+            ArriveCopy arriveCopy,
             CatalogMapper mapper
     ) {
         this.createWork = createWork;
@@ -59,6 +67,8 @@ public class CatalogController {
         this.searchSimilarWorks = searchSimilarWorks;
         this.updateWork = updateWork;
         this.updateCopyStatus = updateCopyStatus;
+        this.transferCopy = transferCopy;
+        this.arriveCopy = arriveCopy;
         this.mapper = mapper;
     }
 
@@ -126,6 +136,23 @@ public class CatalogController {
             @RequestBody UpdateCopyStatusRequest request
     ) {
         Copy copy = updateCopyStatus.execute(new CopyId(copyId), request);
+        return mapper.toDto(copy);
+    }
+
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    @PatchMapping("/copies/{copyId}/transfer")
+    public CopyDTO transferCopy(
+            @PathVariable String copyId,
+            @Valid @RequestBody TransferCopyRequest request
+    ) {
+        Copy copy = transferCopy.execute(new CopyId(copyId), request);
+        return mapper.toDto(copy);
+    }
+
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    @PatchMapping("/copies/{copyId}/arrive")
+    public CopyDTO arriveCopy(@PathVariable String copyId) {
+        Copy copy = arriveCopy.execute(new CopyId(copyId));
         return mapper.toDto(copy);
     }
 }

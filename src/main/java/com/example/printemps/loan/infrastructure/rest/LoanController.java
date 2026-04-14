@@ -1,9 +1,13 @@
 package com.example.printemps.loan.infrastructure.rest;
 
 import com.example.printemps.loan.application.models.CheckoutLoanRequest;
+import com.example.printemps.loan.application.models.DeclareDamagedRequest;
+import com.example.printemps.loan.application.models.DeclareLostRequest;
 import com.example.printemps.loan.application.models.RenewLoanRequest;
 import com.example.printemps.loan.application.models.ReturnLoanRequest;
 import com.example.printemps.loan.application.usecases.CheckoutLoan;
+import com.example.printemps.loan.application.usecases.DeclareDamagedLoan;
+import com.example.printemps.loan.application.usecases.DeclareLostLoan;
 import com.example.printemps.loan.application.usecases.RenewLoan;
 import com.example.printemps.loan.application.usecases.ReturnLoan;
 import com.example.printemps.loan.application.usecases.SearchLoanById;
@@ -14,6 +18,8 @@ import com.example.printemps.loan.infrastructure.rest.dto.LoanDTO;
 import com.example.printemps.loan.infrastructure.rest.mapper.LoanMapper;
 
 import com.example.printemps.shared.error.BusinessException;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +34,8 @@ public class LoanController {
     private final RenewLoan renewLoan;
     private final SearchLoanById searchLoanById;
     private final SearchLoansByUser searchLoansByUser;
+    private final DeclareLostLoan declareLostLoan;
+    private final DeclareDamagedLoan declareDamagedLoan;
     private final LoanMapper mapper;
 
     public LoanController(
@@ -36,6 +44,8 @@ public class LoanController {
             RenewLoan renewLoan,
             SearchLoanById searchLoanById,
             SearchLoansByUser searchLoansByUser,
+            DeclareLostLoan declareLostLoan,
+            DeclareDamagedLoan declareDamagedLoan,
             LoanMapper mapper
     ) {
         this.checkoutLoan = checkoutLoan;
@@ -43,6 +53,8 @@ public class LoanController {
         this.renewLoan = renewLoan;
         this.searchLoanById = searchLoanById;
         this.searchLoansByUser = searchLoansByUser;
+        this.declareLostLoan = declareLostLoan;
+        this.declareDamagedLoan = declareDamagedLoan;
         this.mapper = mapper;
     }
 
@@ -83,5 +95,25 @@ public class LoanController {
                 .stream()
                 .map(mapper::toDto)
                 .toList();
+    }
+
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    @PostMapping("/{loanId}/declare-lost")
+    public LoanDTO declareLost(
+            @PathVariable String loanId,
+            @Valid @RequestBody DeclareLostRequest request
+    ) {
+        Loan loan = declareLostLoan.execute(loanId, request);
+        return mapper.toDto(loan);
+    }
+
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    @PostMapping("/{loanId}/declare-damaged")
+    public LoanDTO declareDamaged(
+            @PathVariable String loanId,
+            @Valid @RequestBody DeclareDamagedRequest request
+    ) {
+        Loan loan = declareDamagedLoan.execute(loanId, request);
+        return mapper.toDto(loan);
     }
 }

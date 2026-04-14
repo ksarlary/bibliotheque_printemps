@@ -96,10 +96,19 @@ public class ReturnLoanHandler implements ReturnLoan {
             }
         }
 
-        Optional<Hold> nextHold = holdRepository.findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(
-                copy.getWork().getId().value(),
+        // Priorité 1 : hold sur cet exemplaire précis
+        Optional<Hold> nextHold = holdRepository.findFirstByCopyIdAndStatusInOrderByQueuePositionAsc(
+                copy.getId().value(),
                 List.of(HoldStatus.REQUESTED)
         );
+
+        // Priorité 2 : file d'attente générale sur l'oeuvre (FIFO)
+        if (nextHold.isEmpty()) {
+            nextHold = holdRepository.findFirstByWorkIdAndStatusInOrderByQueuePositionAsc(
+                    copy.getWork().getId().value(),
+                    List.of(HoldStatus.REQUESTED)
+            );
+        }
 
         if (nextHold.isPresent()) {
             Hold hold = nextHold.get();

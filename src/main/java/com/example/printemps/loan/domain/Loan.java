@@ -139,7 +139,18 @@ public class Loan {
     }
 
     public void markAsLost() {
+        if (this.status != LoanStatus.ACTIVE && this.status != LoanStatus.OVERDUE) {
+            throw new IllegalStateException("Only active or overdue loans can be declared lost");
+        }
         this.status = LoanStatus.LOST_DECLARED;
+    }
+
+    public void markAsDamagedReturn(LocalDateTime returnedAt) {
+        if (this.status != LoanStatus.ACTIVE && this.status != LoanStatus.OVERDUE) {
+            throw new IllegalStateException("Only active or overdue loans can be declared damaged");
+        }
+        this.returnedAt = returnedAt;
+        this.status = LoanStatus.RETURNED;
     }
 
 

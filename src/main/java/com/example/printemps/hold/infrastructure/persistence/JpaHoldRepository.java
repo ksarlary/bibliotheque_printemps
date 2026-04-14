@@ -63,4 +63,19 @@ public class JpaHoldRepository implements HoldRepository {
     public List<Hold> findByStatusAndPickupUntilBefore(HoldStatus status, LocalDateTime dateTime) {
         return jpaRepository.findByStatusAndPickupUntilBefore(status, dateTime);
     }
+
+    @Override
+    public boolean existsByCopyIdAndUserIdAndStatusIn(String copyId, String userId, List<HoldStatus> statuses) {
+        return jpaRepository.existsByCopyIdAndUserIdAndStatusIn(copyId, userId, statuses);
+    }
+
+    @Override
+    public Optional<Hold> findFirstByCopyIdAndStatusInOrderByQueuePositionAsc(String copyId, List<HoldStatus> statuses) {
+        return jpaRepository.findFirstByCopyIdAndStatusInOrderByQueuePositionAsc(copyId, statuses);
+    }
+
+    @Override
+    public Optional<Hold> findByCopyIdAndUserIdAndStatus(String copyId, String userId, HoldStatus status) {
+        return jpaRepository.findByCopyIdAndUserIdAndStatus(copyId, userId, status);
+    }
 }

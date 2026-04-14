@@ -13,6 +13,7 @@ public class HoldMapper {
         return new HoldDTO(
                 hold.getId().value(),
                 hold.getWorkId(),
+                hold.getCopyId(),
                 hold.getUserId(),
                 hold.getStatus().name(),
                 hold.getQueuePosition(),

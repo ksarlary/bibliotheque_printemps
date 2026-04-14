@@ -80,6 +80,10 @@ public class Copy {
         this.status = status;
     }
 
+    public void updateLocation(String location) {
+        this.location = location;
+    }
+
     public Long getTechnicalId() {
         return technicalId;
     }

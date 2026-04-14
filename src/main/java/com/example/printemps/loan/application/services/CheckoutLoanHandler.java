@@ -70,11 +70,20 @@ public class CheckoutLoanHandler implements CheckoutLoan {
 
         validateUserCanCheckout(user, request.userId());
 
-        Optional<Hold> readyHoldForUser = holdRepository.findByWorkIdAndUserIdAndStatus(
-                copy.getWork().getId().value(),
+        // Cherche d'abord un hold READY_FOR_PICKUP sur cet exemplaire précis
+        Optional<Hold> readyHoldForUser = holdRepository.findByCopyIdAndUserIdAndStatus(
+                copy.getId().value(),
                 request.userId(),
                 HoldStatus.READY_FOR_PICKUP
         );
+        // Sinon, cherche un hold READY_FOR_PICKUP sur l'oeuvre en général
+        if (readyHoldForUser.isEmpty()) {
+            readyHoldForUser = holdRepository.findByWorkIdAndUserIdAndStatus(
+                    copy.getWork().getId().value(),
+                    request.userId(),
+                    HoldStatus.READY_FOR_PICKUP
+            );
+        }
 
         boolean isReservationPickup = isReservationPickup(copy, readyHoldForUser);
         validateCopyCanBeCheckedOut(copy, request.copyId(), isReservationPickup);
