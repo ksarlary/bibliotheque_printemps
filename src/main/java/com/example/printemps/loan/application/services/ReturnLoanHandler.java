@@ -23,6 +23,8 @@ import com.example.printemps.users.domain.Policy;
 import com.example.printemps.users.domain.Status;
 import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -34,6 +36,8 @@ import java.util.NoSuchElementException;
 
 @Service
 public class ReturnLoanHandler implements ReturnLoan {
+
+    private static final Logger log = LoggerFactory.getLogger(ReturnLoanHandler.class);
 
     private final LoanRepository loanRepository;
     private final CopyRepository copyRepository;
@@ -90,10 +94,18 @@ public class ReturnLoanHandler implements ReturnLoan {
 
             penaltyRepository.save(penalty);
 
+            log.info("[AUDIT] RETURN_LATE loanId={} copyId={} userId={} lateDays={} penaltyAmount={}",
+                    loan.getId().value(), loan.getCopyId(), loan.getUserId(), lateDays, amount);
+
             if (lateDays > policy.getBlockAfterDaysLate()) {
                 user.updateStatus(Status.BLOCKED);
                 userRepository.save(user);
+                log.info("[AUDIT] USER_BLOCKED userId={} reason=LATE_RETURN loanId={}",
+                        loan.getUserId(), loan.getId().value());
             }
+        } else {
+            log.info("[AUDIT] RETURN loanId={} copyId={} userId={}",
+                    loan.getId().value(), loan.getCopyId(), loan.getUserId());
         }
 
         // Priorité 1 : hold sur cet exemplaire précis

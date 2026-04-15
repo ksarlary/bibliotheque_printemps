@@ -12,6 +12,8 @@ import com.example.printemps.hold.domain.HoldStatus;
 import com.example.printemps.shared.DomainIdGenerator;
 import com.example.printemps.shared.error.BusinessException;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +21,8 @@ import java.util.NoSuchElementException;
 
 @Service
 public class CreateHoldHandler implements CreateHold {
+
+    private static final Logger log = LoggerFactory.getLogger(CreateHoldHandler.class);
 
     private final HoldRepository holdRepository;
     private final CopyRepository copyRepository;
@@ -48,6 +52,10 @@ public class CreateHoldHandler implements CreateHold {
         }
 
         holdRepository.save(hold);
+
+        log.info("[AUDIT] CREATE_HOLD holdId={} workId={} copyId={} userId={} queuePosition={}",
+                holdId.value(), request.workId(), request.copyId(), request.userId(), hold.getQueuePosition());
+
         return holdId;
     }
 

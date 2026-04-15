@@ -15,12 +15,16 @@ import com.example.printemps.penalties.domain.PenaltyId;
 import com.example.printemps.penalties.domain.PenaltyType;
 import com.example.printemps.shared.DomainIdGenerator;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
 
 @Service
 public class DeclareLostLoanHandler implements DeclareLostLoan {
+
+    private static final Logger log = LoggerFactory.getLogger(DeclareLostLoanHandler.class);
 
     private final LoanRepository loanRepository;
     private final CopyRepository copyRepository;
@@ -62,6 +66,9 @@ public class DeclareLostLoanHandler implements DeclareLostLoan {
                 "Copy declared lost for loan " + loanId
         );
         penaltyRepository.save(penalty);
+
+        log.info("[AUDIT] DECLARE_LOST loanId={} copyId={} userId={} replacementAmount={}",
+                loanId, loan.getCopyId(), loan.getUserId(), request.replacementAmount());
 
         return loan;
     }

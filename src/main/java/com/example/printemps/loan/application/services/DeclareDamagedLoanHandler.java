@@ -15,6 +15,8 @@ import com.example.printemps.penalties.domain.PenaltyId;
 import com.example.printemps.penalties.domain.PenaltyType;
 import com.example.printemps.shared.DomainIdGenerator;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,8 @@ import java.util.NoSuchElementException;
 
 @Service
 public class DeclareDamagedLoanHandler implements DeclareDamagedLoan {
+
+    private static final Logger log = LoggerFactory.getLogger(DeclareDamagedLoanHandler.class);
 
     private final LoanRepository loanRepository;
     private final CopyRepository copyRepository;
@@ -65,6 +69,9 @@ public class DeclareDamagedLoanHandler implements DeclareDamagedLoan {
                 "Copy declared damaged for loan " + loanId
         );
         penaltyRepository.save(penalty);
+
+        log.info("[AUDIT] DECLARE_DAMAGED loanId={} copyId={} userId={} repairAmount={}",
+                loanId, loan.getCopyId(), loan.getUserId(), request.repairAmount());
 
         return loan;
     }
