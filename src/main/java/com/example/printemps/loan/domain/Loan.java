@@ -6,7 +6,12 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity
-@Table(name = "loan")
+@Table(name = "loan", indexes = {
+        @Index(name = "idx_loan_user_id", columnList = "user_id"),
+        @Index(name = "idx_loan_copy_id", columnList = "copy_id"),
+        @Index(name = "idx_loan_status", columnList = "status"),
+        @Index(name = "idx_loan_due_at", columnList = "due_at")
+})
 @Access(AccessType.FIELD)
 public class Loan {
 

@@ -5,7 +5,13 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "hold")
+@Table(name = "hold", indexes = {
+        @Index(name = "idx_hold_work_id", columnList = "work_id"),
+        @Index(name = "idx_hold_copy_id", columnList = "copy_id"),
+        @Index(name = "idx_hold_user_id", columnList = "user_id"),
+        @Index(name = "idx_hold_status", columnList = "status"),
+        @Index(name = "idx_hold_pickup_until", columnList = "pickup_until")
+})
 @Access(AccessType.FIELD)
 public class Hold {
 
