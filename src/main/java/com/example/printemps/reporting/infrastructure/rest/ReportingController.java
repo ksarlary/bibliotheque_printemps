@@ -1,17 +1,8 @@
 package com.example.printemps.reporting.infrastructure.rest;
 
-import com.example.printemps.reporting.application.models.AcquisitionByPeriodReport;
-import com.example.printemps.reporting.application.models.OverdueByPeriodReport;
-import com.example.printemps.reporting.application.models.RotationRateReport;
-import com.example.printemps.reporting.application.models.TopBorrowedWorkReport;
-import com.example.printemps.reporting.application.usecases.SearchAcquisitionsByPeriod;
-import com.example.printemps.reporting.application.usecases.SearchOverduesByPeriod;
-import com.example.printemps.reporting.application.usecases.SearchRotationRates;
-import com.example.printemps.reporting.application.usecases.SearchTopBorrowedWorks;
-import com.example.printemps.reporting.infrastructure.rest.dto.AcquisitionByPeriodDTO;
-import com.example.printemps.reporting.infrastructure.rest.dto.OverdueByPeriodDTO;
-import com.example.printemps.reporting.infrastructure.rest.dto.RotationRateDTO;
-import com.example.printemps.reporting.infrastructure.rest.dto.TopBorrowedWorkDTO;
+import com.example.printemps.reporting.application.models.*;
+import com.example.printemps.reporting.application.usecases.*;
+import com.example.printemps.reporting.infrastructure.rest.dto.*;
 import com.example.printemps.reporting.infrastructure.rest.mapper.ReportingMapper;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +26,8 @@ class ReportingController {
     private final SearchAcquisitionsByPeriod searchAcquisitionsByPeriod;
     private final ReportingMapper reportingMapper;
     private final ReportingCsvExporter reportingCsvExporter;
+    private final SearchReservationSuccessRate searchReservationSuccessRate;
+    private final SearchOverdueReturnRate searchOverdueReturnRate;
 
     ReportingController(
             SearchTopBorrowedWorks searchTopBorrowedWorks,
@@ -42,7 +35,7 @@ class ReportingController {
             SearchRotationRates searchRotationRates,
             SearchAcquisitionsByPeriod searchAcquisitionsByPeriod,
             ReportingMapper reportingMapper,
-            ReportingCsvExporter reportingCsvExporter
+            ReportingCsvExporter reportingCsvExporter, SearchReservationSuccessRate searchReservationSuccessRate, SearchOverdueReturnRate searchOverdueReturnRate
     ) {
         this.searchTopBorrowedWorks = searchTopBorrowedWorks;
         this.searchOverduesByPeriod = searchOverduesByPeriod;
@@ -50,6 +43,8 @@ class ReportingController {
         this.searchAcquisitionsByPeriod = searchAcquisitionsByPeriod;
         this.reportingMapper = reportingMapper;
         this.reportingCsvExporter = reportingCsvExporter;
+        this.searchReservationSuccessRate = searchReservationSuccessRate;
+        this.searchOverdueReturnRate = searchOverdueReturnRate;
     }
 
     @GetMapping("/top-borrowed-works")
@@ -141,5 +136,19 @@ class ReportingController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
                 .contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
                 .body(csvContent);
+    }
+
+    @GetMapping("/kpis/reservation-success-rate")
+    ResponseEntity<ReservationSuccessRateDTO> getReservationSuccessRate() {
+        ReservationSuccessRateReport report = searchReservationSuccessRate.handle();
+        ReservationSuccessRateDTO dto = reportingMapper.toReservationSuccessRateDTO(report);
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/kpis/overdue-return-rate")
+    ResponseEntity<OverdueReturnRateDTO> getOverdueReturnRate() {
+        OverdueReturnRateReport report = searchOverdueReturnRate.handle();
+        OverdueReturnRateDTO dto = reportingMapper.toOverdueReturnRateDTO(report);
+        return ResponseEntity.ok(dto);
     }
 }
