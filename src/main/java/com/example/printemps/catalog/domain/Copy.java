@@ -6,7 +6,12 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "copy")
+@Table(name = "copy", indexes = {
+        @Index(name = "idx_copy_work_id", columnList = "work_id"),
+        @Index(name = "idx_copy_status", columnList = "status"),
+        @Index(name = "idx_copy_location", columnList = "location"),
+        @Index(name = "idx_copy_acquired_at", columnList = "acquired_at")
+})
 @Access(AccessType.FIELD)
 public class Copy {
 
@@ -78,6 +83,10 @@ public class Copy {
 
     public void updateStatus(CopyStatus status) {
         this.status = status;
+    }
+
+    public void updateLocation(String location) {
+        this.location = location;
     }
 
     public Long getTechnicalId() {

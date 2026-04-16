@@ -28,6 +28,12 @@ public interface SpringJpaHoldRepository extends JpaRepository<Hold, Long> {
 
     List<Hold> findByStatusAndPickupUntilBefore(HoldStatus status, LocalDateTime dateTime);
 
+    boolean existsByCopyIdAndUserIdAndStatusIn(String copyId, String userId, List<HoldStatus> statuses);
+
+    Optional<Hold> findFirstByCopyIdAndStatusInOrderByQueuePositionAsc(String copyId, List<HoldStatus> statuses);
+
+    Optional<Hold> findByCopyIdAndUserIdAndStatus(String copyId, String userId, HoldStatus status);
+
     long countByStatus(HoldStatus status);
 
     long countByStatusIn(List<HoldStatus> statuses);

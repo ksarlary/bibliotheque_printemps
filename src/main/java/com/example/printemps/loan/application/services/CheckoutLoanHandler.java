@@ -21,6 +21,8 @@ import com.example.printemps.users.domain.Policy;
 import com.example.printemps.users.domain.Status;
 import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -30,6 +32,7 @@ import java.util.Optional;
 @Service
 public class CheckoutLoanHandler implements CheckoutLoan {
 
+    private static final Logger log = LoggerFactory.getLogger(CheckoutLoanHandler.class);
     private final LoanRepository loanRepository;
     private final CopyRepository copyRepository;
     private final UserRepository userRepository;
@@ -70,11 +73,20 @@ public class CheckoutLoanHandler implements CheckoutLoan {
 
         validateUserCanCheckout(user, request.userId());
 
-        Optional<Hold> readyHoldForUser = holdRepository.findByWorkIdAndUserIdAndStatus(
-                copy.getWork().getId().value(),
+        // Cherche d'abord un hold READY_FOR_PICKUP sur cet exemplaire précis
+        Optional<Hold> readyHoldForUser = holdRepository.findByCopyIdAndUserIdAndStatus(
+                copy.getId().value(),
                 request.userId(),
                 HoldStatus.READY_FOR_PICKUP
         );
+        // Sinon, cherche un hold READY_FOR_PICKUP sur l'oeuvre en général
+        if (readyHoldForUser.isEmpty()) {
+            readyHoldForUser = holdRepository.findByWorkIdAndUserIdAndStatus(
+                    copy.getWork().getId().value(),
+                    request.userId(),
+                    HoldStatus.READY_FOR_PICKUP
+            );
+        }
 
         boolean isReservationPickup = isReservationPickup(copy, readyHoldForUser);
         validateCopyCanBeCheckedOut(copy, request.copyId(), isReservationPickup);
@@ -102,6 +114,9 @@ public class CheckoutLoanHandler implements CheckoutLoan {
 
         copy.updateStatus(CopyStatus.ON_LOAN);
         copyRepository.save(copy);
+
+        log.info("[AUDIT] CHECKOUT loanId={} copyId={} userId={} dueAt={} reservationPickup={}",
+                saved.getId().value(), request.copyId(), request.userId(), saved.getDueAt(), isReservationPickup);
 
         return saved;
     }

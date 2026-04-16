@@ -19,6 +19,8 @@ import com.example.printemps.users.domain.Policy;
 import com.example.printemps.users.domain.Status;
 import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,8 @@ import java.util.NoSuchElementException;
 
 @Service
 public class RenewLoanHandler implements RenewLoan {
+
+    private static final Logger log = LoggerFactory.getLogger(RenewLoanHandler.class);
 
     private final LoanRepository loanRepository;
     private final UserRepository userRepository;
@@ -103,7 +107,11 @@ public class RenewLoanHandler implements RenewLoan {
         }
 
         loan.renew(policy.getLoanDurationDays());
+        Loan saved = loanRepository.save(loan);
 
-        return loanRepository.save(loan);
+        log.info("[AUDIT] RENEW loanId={} copyId={} userId={} newDueAt={} renewCount={}",
+                saved.getId().value(), saved.getCopyId(), saved.getUserId(), saved.getDueAt(), saved.getRenewCount());
+
+        return saved;
     }
 }

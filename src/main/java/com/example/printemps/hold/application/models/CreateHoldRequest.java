@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record CreateHoldRequest(
         @NotBlank String workId,
-        @NotBlank String userId
+        @NotBlank String userId,
+        String copyId
 ) {
 }

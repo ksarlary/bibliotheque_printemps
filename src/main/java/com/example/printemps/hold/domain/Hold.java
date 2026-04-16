@@ -5,7 +5,13 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "hold")
+@Table(name = "hold", indexes = {
+        @Index(name = "idx_hold_work_id", columnList = "work_id"),
+        @Index(name = "idx_hold_copy_id", columnList = "copy_id"),
+        @Index(name = "idx_hold_user_id", columnList = "user_id"),
+        @Index(name = "idx_hold_status", columnList = "status"),
+        @Index(name = "idx_hold_pickup_until", columnList = "pickup_until")
+})
 @Access(AccessType.FIELD)
 public class Hold {
 
@@ -18,6 +24,9 @@ public class Hold {
 
     @Column(name = "work_id", nullable = false)
     private String workId;
+
+    @Column(name = "copy_id")
+    private String copyId;
 
     @Column(name = "user_id", nullable = false)
     private String userId;
@@ -35,16 +44,21 @@ public class Hold {
     protected Hold() {
     }
 
-    private Hold(HoldId id, String workId, String userId, int queuePosition) {
+    private Hold(HoldId id, String workId, String copyId, String userId, int queuePosition) {
         this.id = id;
         this.workId = workId;
+        this.copyId = copyId;
         this.userId = userId;
         this.queuePosition = queuePosition;
         this.status = HoldStatus.REQUESTED;
     }
 
     public static Hold create(HoldId id, String workId, String userId, int queuePosition) {
-        return new Hold(id, workId, userId, queuePosition);
+        return new Hold(id, workId, null, userId, queuePosition);
+    }
+
+    public static Hold createForCopy(HoldId id, String workId, String copyId, String userId, int queuePosition) {
+        return new Hold(id, workId, copyId, userId, queuePosition);
     }
 
     public HoldId getId() {
@@ -53,6 +67,14 @@ public class Hold {
 
     public String getWorkId() {
         return workId;
+    }
+
+    public String getCopyId() {
+        return copyId;
+    }
+
+    public boolean isCopySpecific() {
+        return copyId != null;
     }
 
     public String getUserId() {

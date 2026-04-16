@@ -7,7 +7,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "penalty")
+@Table(name = "penalty", indexes = {
+        @Index(name = "idx_penalty_user_id", columnList = "user_id"),
+        @Index(name = "idx_penalty_status", columnList = "status")
+})
 @Access(AccessType.FIELD)
 public class Penalty {
 

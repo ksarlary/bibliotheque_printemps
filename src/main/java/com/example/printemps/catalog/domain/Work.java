@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "work")
+@Table(name = "work", indexes = {
+        @Index(name = "idx_work_isbn", columnList = "isbn")
+})
 @Access(AccessType.FIELD)
 public class Work {
 

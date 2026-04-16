@@ -6,7 +6,12 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity
-@Table(name = "loan")
+@Table(name = "loan", indexes = {
+        @Index(name = "idx_loan_user_id", columnList = "user_id"),
+        @Index(name = "idx_loan_copy_id", columnList = "copy_id"),
+        @Index(name = "idx_loan_status", columnList = "status"),
+        @Index(name = "idx_loan_due_at", columnList = "due_at")
+})
 @Access(AccessType.FIELD)
 public class Loan {
 
@@ -139,7 +144,18 @@ public class Loan {
     }
 
     public void markAsLost() {
+        if (this.status != LoanStatus.ACTIVE && this.status != LoanStatus.OVERDUE) {
+            throw new IllegalStateException("Only active or overdue loans can be declared lost");
+        }
         this.status = LoanStatus.LOST_DECLARED;
+    }
+
+    public void markAsDamagedReturn(LocalDateTime returnedAt) {
+        if (this.status != LoanStatus.ACTIVE && this.status != LoanStatus.OVERDUE) {
+            throw new IllegalStateException("Only active or overdue loans can be declared damaged");
+        }
+        this.returnedAt = returnedAt;
+        this.status = LoanStatus.RETURNED;
     }
 
 
