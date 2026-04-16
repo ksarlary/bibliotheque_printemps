@@ -33,4 +33,8 @@ public interface SpringJpaHoldRepository extends JpaRepository<Hold, Long> {
     Optional<Hold> findFirstByCopyIdAndStatusInOrderByQueuePositionAsc(String copyId, List<HoldStatus> statuses);
 
     Optional<Hold> findByCopyIdAndUserIdAndStatus(String copyId, String userId, HoldStatus status);
+
+    long countByStatus(HoldStatus status);
+
+    long countByStatusIn(List<HoldStatus> statuses);
 }

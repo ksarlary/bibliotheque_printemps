@@ -78,4 +78,14 @@ public class JpaHoldRepository implements HoldRepository {
     public Optional<Hold> findByCopyIdAndUserIdAndStatus(String copyId, String userId, HoldStatus status) {
         return jpaRepository.findByCopyIdAndUserIdAndStatus(copyId, userId, status);
     }
+
+    @Override
+    public long countByStatus(HoldStatus status) {
+        return jpaRepository.countByStatus(status);
+    }
+
+    @Override
+    public long countByStatusIn(List<HoldStatus> statuses) {
+        return jpaRepository.countByStatusIn(statuses);
+    }
 }
