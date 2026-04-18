@@ -9,6 +9,8 @@ import com.example.printemps.penalties.domain.PenaltyStatus;
 import com.example.printemps.users.application.gateways.UserRepository;
 import com.example.printemps.users.domain.Status;
 import com.example.printemps.users.domain.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,8 @@ import java.util.NoSuchElementException;
 
 @Service
 class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
+
+    private static final Logger log = LoggerFactory.getLogger(UpdatePenaltyStatusHandler.class);
 
     private final PenaltyRepository penaltyRepository;
     private final UserRepository userRepository;
@@ -31,8 +35,12 @@ class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
         Penalty penalty = penaltyRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Penalty not found"));
 
+        var oldStatus = penalty.getStatus();
         penalty.updateStatus(request.status());
         penaltyRepository.save(penalty);
+
+        log.info("[AUDIT] PENALTY_UPDATED penaltyId={} userId={} type={} oldStatus={} newStatus={}",
+                id.value(), penalty.getUserId(), penalty.getType(), oldStatus, request.status());
 
         if (request.status() == PenaltyStatus.PAID
                 || request.status() == PenaltyStatus.CANCELLED) {
@@ -45,6 +53,8 @@ class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
             if (!hasStillActivePenalties && user.getStatus() == Status.BLOCKED) {
                 user.updateStatus(Status.ACTIVE);
                 userRepository.save(user);
+                log.info("[AUDIT] USER_UNBLOCKED userId={} reason=PENALTIES_CLEARED",
+                        user.getSsoId());
             }
         }
     }
