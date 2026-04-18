@@ -83,4 +83,13 @@ public class ReportingMapper {
         );
     }
 
+    public AverageReservationAvailabilityTimeDTO toAverageReservationAvailabilityTimeDTO(
+            AverageReservationAvailabilityTimeReport report
+    ) {
+        return new AverageReservationAvailabilityTimeDTO(
+                report.readyReservationsCount(),
+                report.averageHours()
+        );
+    }
+
 }

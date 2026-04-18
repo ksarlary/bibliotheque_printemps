@@ -88,4 +88,10 @@ public class JpaHoldRepository implements HoldRepository {
     public long countByStatusIn(List<HoldStatus> statuses) {
         return jpaRepository.countByStatusIn(statuses);
     }
+
+    @Override
+    public List<Hold> findByStatusIn(List<HoldStatus> statuses) {
+        return jpaRepository.findByStatusIn(statuses);
+    }
+
 }

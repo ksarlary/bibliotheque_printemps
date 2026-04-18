@@ -31,23 +31,21 @@ class UpdatePenaltyStatusHandler implements UpdatePenaltyStatus {
         Penalty penalty = penaltyRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Penalty not found"));
 
-        User user = userRepository.findById(penalty.getUserId())
-                .orElseThrow(() -> new NoSuchElementException("User not found: " + penalty.getUserId()));
-
         penalty.updateStatus(request.status());
-
+        penaltyRepository.save(penalty);
 
         if (request.status() == PenaltyStatus.PAID
                 || request.status() == PenaltyStatus.CANCELLED) {
+            User user = userRepository.findById(penalty.getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("User not found: " + penalty.getUserId()));
+
             boolean hasStillActivePenalties =
                     !penaltyRepository.findActiveByUserId(user.getSsoId()).isEmpty();
 
             if (!hasStillActivePenalties && user.getStatus() == Status.BLOCKED) {
                 user.updateStatus(Status.ACTIVE);
+                userRepository.save(user);
             }
         }
-
-
-        userRepository.save(user);
     }
 }

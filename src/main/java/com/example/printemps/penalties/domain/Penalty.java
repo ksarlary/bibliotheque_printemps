@@ -92,7 +92,17 @@ public class Penalty {
     }
 
 
-    public void updateStatus(PenaltyStatus status) { this.status = status; }
+    public void updateStatus(PenaltyStatus newStatus) {
+        if (this.status != PenaltyStatus.ACTIVE) {
+            throw new IllegalStateException("Only an ACTIVE penalty can be updated");
+        }
+
+        if (newStatus != PenaltyStatus.PAID && newStatus != PenaltyStatus.CANCELLED) {
+            throw new IllegalStateException("Penalty can only become PAID or CANCELLED");
+        }
+
+        this.status = newStatus;
+    }
 
 
     public Long getTechnicalId() {

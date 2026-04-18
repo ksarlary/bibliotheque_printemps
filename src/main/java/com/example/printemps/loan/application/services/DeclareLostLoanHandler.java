@@ -14,6 +14,9 @@ import com.example.printemps.penalties.domain.Penalty;
 import com.example.printemps.penalties.domain.PenaltyId;
 import com.example.printemps.penalties.domain.PenaltyType;
 import com.example.printemps.shared.DomainIdGenerator;
+import com.example.printemps.users.application.gateways.UserRepository;
+import com.example.printemps.users.domain.Status;
+import com.example.printemps.users.domain.User;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +33,20 @@ public class DeclareLostLoanHandler implements DeclareLostLoan {
     private final CopyRepository copyRepository;
     private final PenaltyRepository penaltyRepository;
     private final DomainIdGenerator idGenerator;
+    private final UserRepository userRepository;
 
     public DeclareLostLoanHandler(
             LoanRepository loanRepository,
             CopyRepository copyRepository,
             PenaltyRepository penaltyRepository,
-            DomainIdGenerator idGenerator
+            DomainIdGenerator idGenerator,
+            UserRepository userRepository
     ) {
         this.loanRepository = loanRepository;
         this.copyRepository = copyRepository;
         this.penaltyRepository = penaltyRepository;
         this.idGenerator = idGenerator;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -51,6 +57,9 @@ public class DeclareLostLoanHandler implements DeclareLostLoan {
 
         Copy copy = copyRepository.findById(new CopyId(loan.getCopyId()))
                 .orElseThrow(() -> new NoSuchElementException("Copy not found: " + loan.getCopyId()));
+
+        User user = userRepository.findById(loan.getUserId())
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + loan.getUserId()));
 
         loan.markAsLost();
         loanRepository.save(loan);
@@ -66,6 +75,9 @@ public class DeclareLostLoanHandler implements DeclareLostLoan {
                 "Copy declared lost for loan " + loanId
         );
         penaltyRepository.save(penalty);
+
+        user.updateStatus(Status.BLOCKED);
+        userRepository.save(user);
 
         log.info("[AUDIT] DECLARE_LOST loanId={} copyId={} userId={} replacementAmount={}",
                 loanId, loan.getCopyId(), loan.getUserId(), request.replacementAmount());
