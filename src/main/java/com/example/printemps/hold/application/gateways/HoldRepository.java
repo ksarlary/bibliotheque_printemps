@@ -34,4 +34,7 @@ public interface HoldRepository {
     long countByStatus(HoldStatus status);
 
     long countByStatusIn(List<HoldStatus> statuses);
+
+    List<Hold> findByStatusIn(List<HoldStatus> statuses);
+
 }

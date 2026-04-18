@@ -41,24 +41,32 @@ public class Hold {
     @Column(name = "pickup_until")
     private LocalDateTime pickupUntil;
 
+    @Column(name = "requested_at", nullable = false)
+    private LocalDateTime requestedAt;
+
+    @Column(name = "ready_for_pickup_at")
+    private LocalDateTime readyForPickupAt;
+
     protected Hold() {
     }
 
-    private Hold(HoldId id, String workId, String copyId, String userId, int queuePosition) {
+    private Hold(HoldId id, String workId, String copyId, String userId, int queuePosition,LocalDateTime requestedAt) {
         this.id = id;
         this.workId = workId;
         this.copyId = copyId;
         this.userId = userId;
         this.queuePosition = queuePosition;
         this.status = HoldStatus.REQUESTED;
+        this.requestedAt = requestedAt;
+        this.readyForPickupAt = null;
     }
 
     public static Hold create(HoldId id, String workId, String userId, int queuePosition) {
-        return new Hold(id, workId, null, userId, queuePosition);
+        return new Hold(id, workId, null, userId, queuePosition, LocalDateTime.now());
     }
 
     public static Hold createForCopy(HoldId id, String workId, String copyId, String userId, int queuePosition) {
-        return new Hold(id, workId, copyId, userId, queuePosition);
+        return new Hold(id, workId, copyId, userId, queuePosition, LocalDateTime.now());
     }
 
     public HoldId getId() {
@@ -93,6 +101,14 @@ public class Hold {
         return pickupUntil;
     }
 
+    public LocalDateTime getRequestedAt() {
+        return requestedAt;
+    }
+
+    public LocalDateTime getReadyForPickupAt() {
+        return readyForPickupAt;
+    }
+
     public void cancel() {
         if (status == HoldStatus.PICKED_UP || status == HoldStatus.EXPIRED) {
             throw new IllegalStateException("This hold cannot be cancelled");
@@ -106,6 +122,7 @@ public class Hold {
         }
         this.status = HoldStatus.READY_FOR_PICKUP;
         this.pickupUntil = pickupUntil;
+        this.readyForPickupAt = LocalDateTime.now();
     }
 
     public void markPickedUp() {

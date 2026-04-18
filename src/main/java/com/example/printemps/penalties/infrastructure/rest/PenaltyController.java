@@ -1,8 +1,6 @@
 package com.example.printemps.penalties.infrastructure.rest;
 
-import com.example.printemps.penalties.application.models.CreatePenaltyRequest;
 import com.example.printemps.penalties.application.models.UpdatePenaltyStatusRequest;
-import com.example.printemps.penalties.application.usecases.CreatePenalty;
 import com.example.printemps.penalties.application.usecases.SearchPenaltiesByUser;
 import com.example.printemps.penalties.application.usecases.SearchPenaltyById;
 import com.example.printemps.penalties.application.usecases.UpdatePenaltyStatus;
@@ -14,34 +12,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/penalties")
 class PenaltyController {
 
-    private final CreatePenalty createPenalty;
     private final SearchPenaltyById searchPenaltyById;
     private final SearchPenaltiesByUser searchPenaltiesByUser;
     private final UpdatePenaltyStatus updatePenaltyStatus;
     private final PenaltyMapper penaltyMapper;
 
-
-    PenaltyController(CreatePenalty createPenalty, SearchPenaltyById searchPenaltyById, SearchPenaltiesByUser searchPenaltiesByUser, UpdatePenaltyStatus updatePenaltyStatus, PenaltyMapper penaltyMapper) {
-        this.createPenalty = createPenalty;
+    PenaltyController(
+            SearchPenaltyById searchPenaltyById,
+            SearchPenaltiesByUser searchPenaltiesByUser,
+            UpdatePenaltyStatus updatePenaltyStatus,
+            PenaltyMapper penaltyMapper
+    ) {
         this.searchPenaltyById = searchPenaltyById;
         this.searchPenaltiesByUser = searchPenaltiesByUser;
         this.updatePenaltyStatus = updatePenaltyStatus;
         this.penaltyMapper = penaltyMapper;
-    }
-
-    @PreAuthorize("hasRole('LIBRARIAN')")
-    @PostMapping
-    ResponseEntity<Void> createPenalty(@Valid @RequestBody CreatePenaltyRequest request) {
-        PenaltyId penaltyId = createPenalty.handle(request);
-        return ResponseEntity.created(URI.create("/api/penalties/" + penaltyId.value())).build();
-
     }
 
     @PreAuthorize("hasRole('LIBRARIAN')")
@@ -70,5 +61,4 @@ class PenaltyController {
         updatePenaltyStatus.handle(new PenaltyId(penaltyId), request);
         return ResponseEntity.noContent().build();
     }
-
 }

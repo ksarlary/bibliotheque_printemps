@@ -12,7 +12,6 @@ import com.example.printemps.loan.application.models.CheckoutLoanRequest;
 import com.example.printemps.loan.application.usecases.CheckoutLoan;
 import com.example.printemps.loan.domain.Loan;
 import com.example.printemps.loan.domain.LoanId;
-import com.example.printemps.penalties.application.gateways.PenaltyRepository;
 import com.example.printemps.shared.DomainIdGenerator;
 import com.example.printemps.shared.error.BusinessException;
 import com.example.printemps.users.application.gateways.PolicyRepository;
@@ -38,7 +37,6 @@ public class CheckoutLoanHandler implements CheckoutLoan {
     private final UserRepository userRepository;
     private final PolicyRepository policyRepository;
     private final HoldRepository holdRepository;
-    private final PenaltyRepository penaltyRepository;
     private final DomainIdGenerator idGenerator;
 
     public CheckoutLoanHandler(
@@ -47,7 +45,6 @@ public class CheckoutLoanHandler implements CheckoutLoan {
             UserRepository userRepository,
             PolicyRepository policyRepository,
             HoldRepository holdRepository,
-            PenaltyRepository penaltyRepository,
             DomainIdGenerator idGenerator
     ) {
         this.loanRepository = loanRepository;
@@ -55,7 +52,6 @@ public class CheckoutLoanHandler implements CheckoutLoan {
         this.userRepository = userRepository;
         this.policyRepository = policyRepository;
         this.holdRepository = holdRepository;
-        this.penaltyRepository = penaltyRepository;
         this.idGenerator = idGenerator;
     }
 
@@ -71,7 +67,7 @@ public class CheckoutLoanHandler implements CheckoutLoan {
         Copy copy = copyRepository.findById(new CopyId(request.copyId()))
                 .orElseThrow(() -> new NoSuchElementException("Copy not found: " + request.copyId()));
 
-        validateUserCanCheckout(user, request.userId());
+        validateUserCanCheckout(user);
 
         // Cherche d'abord un hold READY_FOR_PICKUP sur cet exemplaire précis
         Optional<Hold> readyHoldForUser = holdRepository.findByCopyIdAndUserIdAndStatus(
@@ -121,13 +117,9 @@ public class CheckoutLoanHandler implements CheckoutLoan {
         return saved;
     }
 
-    private void validateUserCanCheckout(User user, String userId) {
+    private void validateUserCanCheckout(User user) {
         if (user.getStatus() == Status.BLOCKED || user.getStatus() == Status.SUSPENDED) {
             throw new BusinessException("New loan not allowed: user account is " + user.getStatus());
-        }
-
-        if (!penaltyRepository.findActiveByUserId(userId).isEmpty()) {
-            throw new BusinessException("New loan not allowed: user has active penalties");
         }
     }
 

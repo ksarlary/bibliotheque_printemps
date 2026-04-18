@@ -28,6 +28,7 @@ class ReportingController {
     private final ReportingCsvExporter reportingCsvExporter;
     private final SearchReservationSuccessRate searchReservationSuccessRate;
     private final SearchOverdueReturnRate searchOverdueReturnRate;
+    private final SearchAverageReservationAvailabilityTime searchAverageReservationAvailabilityTime;
 
     ReportingController(
             SearchTopBorrowedWorks searchTopBorrowedWorks,
@@ -35,7 +36,7 @@ class ReportingController {
             SearchRotationRates searchRotationRates,
             SearchAcquisitionsByPeriod searchAcquisitionsByPeriod,
             ReportingMapper reportingMapper,
-            ReportingCsvExporter reportingCsvExporter, SearchReservationSuccessRate searchReservationSuccessRate, SearchOverdueReturnRate searchOverdueReturnRate
+            ReportingCsvExporter reportingCsvExporter, SearchReservationSuccessRate searchReservationSuccessRate, SearchOverdueReturnRate searchOverdueReturnRate, SearchAverageReservationAvailabilityTime searchAverageReservationAvailabilityTime
     ) {
         this.searchTopBorrowedWorks = searchTopBorrowedWorks;
         this.searchOverduesByPeriod = searchOverduesByPeriod;
@@ -45,6 +46,7 @@ class ReportingController {
         this.reportingCsvExporter = reportingCsvExporter;
         this.searchReservationSuccessRate = searchReservationSuccessRate;
         this.searchOverdueReturnRate = searchOverdueReturnRate;
+        this.searchAverageReservationAvailabilityTime = searchAverageReservationAvailabilityTime;
     }
 
     @GetMapping("/top-borrowed-works")
@@ -151,4 +153,13 @@ class ReportingController {
         OverdueReturnRateDTO dto = reportingMapper.toOverdueReturnRateDTO(report);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/kpis/average-reservation-availability-time")
+    ResponseEntity<AverageReservationAvailabilityTimeDTO> getAverageReservationAvailabilityTime() {
+        AverageReservationAvailabilityTimeReport report = searchAverageReservationAvailabilityTime.handle();
+        AverageReservationAvailabilityTimeDTO dto =
+                reportingMapper.toAverageReservationAvailabilityTimeDTO(report);
+        return ResponseEntity.ok(dto);
+    }
+
 }
